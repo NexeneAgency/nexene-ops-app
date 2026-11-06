@@ -4,7 +4,7 @@ import { DatabaseSync } from "node:sqlite";
 import { randomBytes, createHash } from "node:crypto";
 import { resolve } from "node:path";
 import assert from "node:assert/strict";
-import { mkdirSync } from "node:fs";
+import { mkdirSync, existsSync } from "node:fs";
 const base = process.env.TEST_BASE_URL || "http://localhost:3000";
 if (!process.env.TEST_DATA_DIR)
   throw new Error(
@@ -23,7 +23,11 @@ sql
     Date.now() + 60000,
   );
 const browser = await chromium.launch({
-  executablePath: process.env.CHROMIUM_PATH || "/usr/bin/chromium",
+  executablePath:
+    process.env.CHROMIUM_PATH ||
+    (existsSync("/usr/bin/chromium")
+      ? "/usr/bin/chromium"
+      : chromium.executablePath()),
   headless: true,
   args: ["--no-sandbox"],
 });
@@ -106,7 +110,9 @@ try {
   await page
     .getByText("Persistent content from browser smoke test.", { exact: true })
     .waitFor();
-  await page.getByRole("button", { name: "DE", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Sprache wechseln: Englisch", exact: true })
+    .click();
   await page.getByRole("button", { name: "Overview", exact: true }).click();
   await page
     .getByRole("heading", {

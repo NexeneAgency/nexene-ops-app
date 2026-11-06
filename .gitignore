@@ -7,3 +7,8 @@ backups/
 *.log
 test-results/
 playwright-report/
+*.tsbuildinfo
+
+.next-browser-tests/
+
+next-env.d.ts

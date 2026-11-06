@@ -1,4 +1,6 @@
 export default {
+  distDir: process.env.NEXENE_BUILD_DIR || ".next",
+  experimental: { useTypeScriptCli: false },
   output: "standalone",
   serverExternalPackages: ["nodemailer"],
   async headers() {

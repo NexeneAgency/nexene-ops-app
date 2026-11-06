@@ -1,6 +1,6 @@
 # Nexene Ops
 
-Bestätigt: drei interne Admins, Kunden mit erlaubten E-Mail-Adressen, keine öffentliche Registrierung. Deutsch/Englisch, klare Gestaltung, Desktop zuerst. Next.js, SQLite, Docker auf Hostinger-VPS. Original-Logos vom Auftraggeber. Figma konnte bislang nicht ausgelesen werden; Farben und Typografie sind zunächst eine gestalterische Annäherung.
+Bestätigt: drei interne Admins, Kunden mit erlaubten E-Mail-Adressen, keine öffentliche Registrierung. Deutsch/Englisch, klare Gestaltung, Desktop zuerst. Next.js, SQLite, Docker auf Hostinger-VPS. Original-Logos vom Auftraggeber. Die gelieferten CI-Farben sind umgesetzt: Vermillion Grey 1 #F8F1F1, Night Black #0C0910, Vermillion #F64740. Figma konnte bislang nicht ausgelesen werden; die genaue Typografie und weitere Designvorgaben benötigen noch einen Abgleich.
 
 ## V1 – Reihenfolge
 

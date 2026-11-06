@@ -4,13 +4,14 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { DatabaseSync, backup } from "node:sqlite";
+import { mkdirSync } from "node:fs";
 const temp = mkdtempSync(join(tmpdir(), "nexene-test-"));
 process.env.DATA_DIR = temp;
 process.env.ADMIN_EMAILS = "admin@nexene.test";
 process.env.APP_URL = "http://localhost:3000";
 process.env.SEED_DEMO = "false";
 const { handle } = await import("../lib/api.mjs");
-const { db, uid } = await import("../lib/db.mjs");
+const { db, uid, migrateDocuments } = await import("../lib/db.mjs");
 const { createSession, issueLogin, redeemLogin } =
   await import("../lib/auth.mjs");
 const sql = db(),
@@ -357,6 +358,7 @@ test("validates links, document links, dates and numeric values", async () => {
   assert.equal(
     (
       await call(`documents/${document}`, "PATCH", {
+        expected_revision: 1,
         content: {
           type: "doc",
           content: [
@@ -389,6 +391,83 @@ test("session revocation takes effect immediately and scoped data stays inaccess
     [],
   );
 });
+test("document revisions prevent one admin from overwriting another admin's changes", async () => {
+  const second = (
+    await call("users", "POST", {
+      name: "Second Admin",
+      email: "second@nexene.test",
+      role: "admin",
+    })
+  ).body.id;
+  const cookie = `ops_session=${createSession(second)}`;
+  const created = (
+    await call("documents", "POST", {
+      project_id: projectA,
+      title: "Concurrent editing",
+    })
+  ).body.id;
+  assert.equal(
+    (
+      await call(`documents/${created}`, "PATCH", {
+        content: { type: "doc", content: [] },
+      })
+    ).status,
+    428,
+  );
+  const first = {
+    type: "doc",
+    content: [
+      {
+        type: "paragraph",
+        content: [{ type: "text", text: "First admin version" }],
+      },
+    ],
+  };
+  assert.equal(
+    (
+      await call(`documents/${created}`, "PATCH", {
+        expected_revision: 1,
+        content: first,
+      })
+    ).status,
+    200,
+  );
+  assert.equal(
+    (
+      await call(
+        `documents/${created}`,
+        "PATCH",
+        { expected_revision: 1, content: { type: "doc", content: [] } },
+        cookie,
+      )
+    ).status,
+    409,
+  );
+  const row = sql.prepare("SELECT * FROM documents WHERE id=?").get(created);
+  assert.equal(row.revision, 2);
+  assert.deepEqual(JSON.parse(row.content), first);
+  assert.equal(
+    (
+      await call(
+        `documents/${created}`,
+        "PATCH",
+        { expected_revision: 2, visible: true },
+        cookie,
+      )
+    ).status,
+    200,
+  );
+  assert.equal(
+    (
+      await call(`documents/${created}`, "PATCH", {
+        expected_revision: 2,
+        visible: false,
+      })
+    ).status,
+    409,
+  );
+});
+
 test("SQLite online backup restores customers, projects and tasks into a clean database", async () => {
   const file = join(temp, "restore.sqlite");
   await backup(sql, file);
@@ -410,6 +489,34 @@ test("SQLite online backup restores customers, projects and tasks into a clean d
   );
   restored.close();
 });
+test("schema migration preserves existing documents and is repeatable", async () => {
+  const directory = join(temp, "legacy");
+  mkdirSync(directory);
+  const file = join(directory, "ops.sqlite");
+  await backup(sql, file);
+  const legacy = new DatabaseSync(file);
+  legacy.exec(
+    "ALTER TABLE documents DROP COLUMN revision; DELETE FROM schema_migrations WHERE version=2;",
+  );
+  const before = legacy
+    .prepare("SELECT id,content FROM documents WHERE id=?")
+    .get(document);
+  legacy.close();
+  const upgraded = new DatabaseSync(file);
+  for (let i = 0; i < 2; i++) migrateDocuments(upgraded);
+  const row = upgraded
+    .prepare("SELECT * FROM documents WHERE id=?")
+    .get(document);
+  assert.equal(row.content, before.content);
+  assert.equal(row.revision, 1);
+  assert.ok(
+    upgraded
+      .prepare("SELECT version FROM schema_migrations WHERE version=2")
+      .get(),
+  );
+  upgraded.close();
+});
+
 after(() => {
   sql.close();
   rmSync(temp, { recursive: true, force: true });

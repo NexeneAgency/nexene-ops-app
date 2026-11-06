@@ -1,6 +1,8 @@
 # Nexene Ops
 
-Erster funktionsfähiger Entwicklungsstand für den Nexene-Agenturworkspace. Next.js App Router, React, SQLite (Node.js 24), Tiptap. Kein separater Datenbankserver. Slack und Hermes sind V2.
+Funktionsfähiger Entwicklungsstand für den Nexene-Agenturworkspace. Next.js App Router, React mit streng geprüftem TypeScript, SQLite (Node.js 24), Tiptap. Die serverseitige Fachlogik bleibt in getesteten JavaScript-Modulen; gemeinsame API-Datenverträge sind typisiert. Kein separater Datenbankserver. Slack und Hermes sind V2.
+
+Die Oberfläche verwendet die Nexene-CI: Vermillion Grey 1 `#F8F1F1`, Night Black `#0C0910`, Vermillion `#F64740`. Kleine Akzenttexte verwenden einen dunkleren Rotton für ausreichenden Kontrast. Die Hauptnavigation, Dialoge und Aufgaben sind per Tastatur bedienbar. Native modale Dialoge begrenzen den Fokus, schließen mit Escape und geben den Fokus an den Auslöser zurück.
 
 ## Lokal starten
 
@@ -38,10 +40,16 @@ E-Mail-Adressen werden durch Admins freigeschaltet. Kontakte verwenden anschlie�
 
 ```sh
 npm test
+npm run typecheck
 npm run build
+npm run test:browser
 ```
 
-Die Tests verwenden temporäre SQLite-Datenbanken und echte Request-/Response-Aufrufe gegen dieselbe API-Implementierung wie Next.js. Sie prüfen fremde Kundenbereiche, interne Daten, Single-Use-Login, Kommentare, Freigaben und Wiederholungen.
+Die Tests verwenden temporäre SQLite-Datenbanken und echte Request-/Response-Aufrufe gegen dieselbe API-Implementierung wie Next.js. Sie prüfen fremde Kundenbereiche, interne Daten, Single-Use-Login, Kommentare, Freigaben, Wiederholungen und konkurrierende Dokumentänderungen.
+
+`npm run test:browser` startet selbst einen isolierten Entwicklungsserver mit temporärer Datenbank, führt Browserabläufe sowie axe-Prüfungen für WCAG 2 A/AA, 2.1 AA und 2.2 AA aus und beendet die Instanz anschließend. Chromium wird unter `/usr/bin/chromium` erwartet; der Pfad lässt sich mit `CHROMIUM_PATH` konfigurieren. Die Testausgabe unterscheidet automatisierte Prüfungen von der weiterhin notwendigen Nutzerabnahme und manuellen Screenreader-Prüfung.
+
+Dokumentänderungen benötigen die geladene `expected_revision`. Der Server weist überholte Änderungen mit HTTP 409 ab; der Editor behält den lokalen Entwurf und bietet bewusstes Neuladen an. Es gibt keine automatische Zusammenführung und keine Versionshistorie. Die Datenbankmigration auf Schema 2 ergänzt Revisionsnummern ohne bestehende Inhalte zu löschen. Vor einem produktiven Update eine Sicherung erstellen.
 
 Ein zusätzlicher Browser-Smoke-Test prüft mit Chromium den Login, alle Aufgabenansichten, das Erstellen einer Aufgabe, das Speichern/Neuladen eines Dokuments, den Sprachwechsel und eine echte Kundenfreigabe. Nur gegen eine isolierte Entwicklungsinstanz ausführen, weil Testkontakte und Testinhalte angelegt werden:
 
@@ -85,4 +93,4 @@ Wiederherstellung: Anwendung stoppen, ausgewählte Sicherung als `ops.sqlite` in
 
 ## Struktur
 
-`app/`: Oberfläche und Next.js-Routen. `lib/db.mjs`: Schema und Datenhaltung. `lib/api.mjs`: Validierung, Zugriffskontrolle und Fachabläufe. `lib/auth.mjs`: Anmeldung, Sitzungen und Mail. `scripts/backup.mjs`: konsistente Sicherung. Daten liegen zentral in SQLite. Ein späterer Datenbankwechsel erfordert eine geplante Datenmigration.
+`app/features/`: eigenständige Bereiche für Projekte, Aufgaben, Dokumente, Kunden und Verwaltung. `app/ui/`: gemeinsame UI-Bausteine und modale Dialoge. `app/use-workspace.tsx`: gemeinsamer Anwendungszustand. `lib/types.ts`: Datenverträge. `lib/client.ts`: HTTP-Client mit Zeitlimit und Fehlerbehandlung. `lib/i18n.ts`: UI-Texte. `lib/db.mjs`: Schema und Datenhaltung. `lib/api.mjs`: Validierung, Zugriffskontrolle und Fachabläufe. `lib/auth.mjs`: Anmeldung, Sitzungen und Mail. `scripts/backup.mjs`: konsistente Sicherung. Daten liegen zentral in SQLite. Ein späterer Datenbankwechsel erfordert eine geplante Datenmigration.

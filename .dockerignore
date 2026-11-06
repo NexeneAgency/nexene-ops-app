@@ -8,3 +8,7 @@ test-results
 playwright-report
 tests
 docs
+
+.next-browser-tests
+*.tsbuildinfo
+next-env.d.ts

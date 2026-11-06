@@ -1,11 +1,20 @@
 "use client";
-import { useEditor, EditorContent } from "@tiptap/react";
+import type { JSONContent } from "@tiptap/react";
+import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import type { Document } from "../lib/types";
 export default function Editor({
   content,
   editable,
   onChange,
   documents = [],
+  lang = "de",
+}: {
+  content: JSONContent;
+  editable: boolean;
+  onChange: (value: JSONContent) => void;
+  documents?: Document[];
+  lang?: "de" | "en";
 }) {
   const editor = useEditor({
     extensions: [
@@ -20,10 +29,35 @@ export default function Editor({
     content,
     editable,
     immediatelyRender: false,
+    editorProps: {
+      attributes: {
+        role: "textbox",
+        "aria-multiline": "true",
+        "aria-label": lang === "de" ? "Dokumentinhalt" : "Document content",
+      },
+    },
     onUpdate: ({ editor }) => onChange?.(editor.getJSON()),
   });
-  const button = (label, fn, active = false) => (
-    <button type="button" className={active ? "active" : ""} onClick={fn}>
+  const labels: Record<string, [string, string]> = {
+    B: ["Fett", "Bold"],
+    I: ["Kursiv", "Italic"],
+    H1: ["Überschrift 1", "Heading 1"],
+    H2: ["Überschrift 2", "Heading 2"],
+    "•": ["Aufzählung", "Bullet list"],
+    "1.": ["Nummerierte Liste", "Numbered list"],
+    "❝": ["Zitat", "Quote"],
+    "</>": ["Codeblock", "Code block"],
+    "↗": ["Link einfügen", "Insert link"],
+  };
+  const button = (label: string, fn: () => unknown, active = false) => (
+    <button
+      type="button"
+      aria-label={labels[label]?.[lang === "de" ? 0 : 1] || label}
+      title={labels[label]?.[lang === "de" ? 0 : 1] || label}
+      aria-pressed={label === "↗" ? undefined : active}
+      className={active ? "active" : ""}
+      onClick={fn}
+    >
       {label}
     </button>
   );
