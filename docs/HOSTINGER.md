@@ -33,6 +33,8 @@ Falls die Anwendung schon angelegt ist: dieselben Umgebungsvariablen ergänzen u
 
 Der Build läuft auf dem VPS und benötigt Zugriff auf den öffentlichen Quellcode, Docker Hub und npm. Ein Registry-Login ist nicht nötig.
 
+Optional lassen sich unter **Umgebung** mit `OPS_CPUS` und `OPS_MEMORY` die Laufzeitlimits anpassen. Standard: eine CPU und 512 MB RAM. Diese Werte sind Ausgangswerte für die kleine Instanz, keine Messung eures VPS. Bei Speicherproblemen oder wachsender Nutzung anhand der RAM-Anzeige und der Protokolle anpassen. Die Limits gelten für den laufenden Container; der Image-Build benötigt zusätzlich freie Ressourcen auf dem VPS. Die Docker-Logs werden auf drei Dateien mit jeweils höchstens 10 MB begrenzt. Eigene Anwendungssicherungen fallen nicht unter diese Logrotation.
+
 ## 3. Domain und HTTPS
 
 Die App lauscht nur auf `127.0.0.1:3000`. Eure Domain muss per DNS auf den VPS zeigen und der vorhandene Reverse Proxy HTTPS auf diesen Port weiterleiten. Ein Beispiel für einen auf dem Host installierten Caddy:
@@ -45,6 +47,8 @@ ops.example.com {
 
 Die Domain identisch in `APP_URL` hinterlegen. Ein in Docker laufender Proxy benötigt ein gemeinsames Docker-Netzwerk statt `127.0.0.1`. Die Compose-Datei startet keinen weiteren Proxy und beansprucht keine öffentlichen Ports 80/443.
 
+Der Port-Link in Hostingers Container-Karte ist bei dieser Bindung kein Nachweis für öffentlichen Browserzugriff. Auch **Running** allein bestätigt weder HTTPS noch erfolgreiche SMTP-Zustellung. Für die Abnahme separat prüfen: Healthcheck, Domain/HTTPS, tatsächliche Login-E-Mail und fortbestehende Daten nach einem erneuten Bereitstellen. Bei Fehlern zuerst Hostingers **Protokolle** des Containers ansehen. Eine Shell im Container benötigt keinen eigenen Docker-Daemon; deshalb ist ein dort fehlschlagendes `docker ps` allein kein Beleg, dass Docker auf dem VPS nicht läuft.
+
 Prüfen:
 
 ```sh
@@ -56,6 +60,8 @@ Erwartet: `{"ok":true}`. Danach über die HTTPS-Adresse einen Anmeldelink für e
 ## Daten, Sicherungen und Updates
 
 Die festen Volumes `nexene_ops_data` und `nexene_ops_backups` bleiben bei Container-Updates erhalten. Nur eine Instanz mit diesen Volumes betreiben. In der Container-Konsole erzeugt `node scripts/backup.mjs` eine konsistente Sicherung im Backup-Volume. Zusätzlich regelmäßige Sicherungen außerhalb des VPS einrichten.
+
+Das Backup-Skript ist vorhanden, aber eine automatische Sicherungsplanung und die Kopie außerhalb des VPS werden durch diese Compose-Datei nicht eingerichtet. Dafür einen Zeitplan und ein externes Sicherungsziel ergänzen. Der feste Containerpfad `BACKUP_DIR=/app/backups` stellt sicher, dass Sicherungen im vorgesehenen Volume landen. Datenvolumes nicht über Bereinigungsfunktionen entfernen, solange sie gebraucht werden.
 
 Für ein Update den aktuellen Quellcode erneut bauen. Bei einem lokalen Checkout: `docker compose up -d --build`. In Hostinger die Funktion zum erneuten Bauen/Bereitstellen verwenden. Vor Updates sichern; Volumes nicht löschen.
 

@@ -5,6 +5,13 @@ services:
       context: https://github.com/NexeneAgency/nexene-ops-app.git#main
       dockerfile: Dockerfile
     restart: unless-stopped
+    cpus: ${OPS_CPUS:-1.0}
+    mem_limit: ${OPS_MEMORY:-512m}
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     ports:
       - "127.0.0.1:3000:3000"
     environment:
@@ -18,6 +25,7 @@ services:
       MAIL_FROM: ${MAIL_FROM:-}
       NODE_ENV: production
       DATA_DIR: /app/data
+      BACKUP_DIR: /app/backups
       DEV_MAIL_LOG: "false"
       SEED_DEMO: "false"
     volumes:

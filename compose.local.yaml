@@ -2,12 +2,20 @@ services:
   ops:
     build: .
     restart: unless-stopped
+    cpus: ${OPS_CPUS:-1.0}
+    mem_limit: ${OPS_MEMORY:-512m}
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     ports:
       - "127.0.0.1:3000:3000"
     environment:
       APP_URL: ${APP_URL:?Set APP_URL}
       ADMIN_EMAILS: ${ADMIN_EMAILS:?Set ADMIN_EMAILS}
       DATA_DIR: /app/data
+      BACKUP_DIR: /app/backups
       SMTP_HOST: ${SMTP_HOST:?Set SMTP_HOST}
       SMTP_PORT: ${SMTP_PORT:-587}
       SMTP_SECURE: ${SMTP_SECURE:-false}
