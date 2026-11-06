@@ -1,6 +1,10 @@
 import { DatabaseSync, backup } from "node:sqlite";
 import { mkdirSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
+if (process.env.TURSO_DATABASE_URL)
+  throw new Error(
+    "This command backs up local SQLite only. Use the backup/export facilities of the connected Turso database.",
+  );
 const source = resolve(process.env.DATA_DIR || "./data", "ops.sqlite");
 if (!existsSync(source))
   throw new Error("Database not found. Start the application first.");

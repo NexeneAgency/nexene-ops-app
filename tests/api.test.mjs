@@ -7,16 +7,19 @@ import { DatabaseSync, backup } from "node:sqlite";
 import { mkdirSync } from "node:fs";
 const temp = mkdtempSync(join(tmpdir(), "nexene-test-"));
 process.env.DATA_DIR = temp;
+if (process.env.OPS_TEST_DRIVER === "libsql")
+  process.env.TURSO_DATABASE_URL = "file:" + join(temp, "ops.sqlite");
 process.env.ADMIN_EMAILS = "admin@nexene.test";
 process.env.APP_URL = "http://localhost:3000";
 process.env.SEED_DEMO = "false";
+const { closeDatabase } = await import("../lib/database.mjs");
 const { handle } = await import("../lib/api.mjs");
 const { db, uid, migrateDocuments } = await import("../lib/db.mjs");
 const { createSession, issueLogin, redeemLogin } =
   await import("../lib/auth.mjs");
 const sql = db(),
-  admin = sql.prepare("SELECT * FROM users WHERE role='admin'").get(),
-  adminCookie = `ops_session=${createSession(admin.id)}`;
+  admin = await sql.prepare("SELECT * FROM users WHERE role='admin'").get(),
+  adminCookie = `ops_session=${await createSession(admin.id)}`;
 async function call(
   path,
   method = "GET",
@@ -98,8 +101,8 @@ test("create customers, projects and authorized contacts", async () => {
   assert.ok(projectA);
   assert.ok(projectB);
   assert.ok(userA);
-  cookieA = `ops_session=${createSession(userA)}`;
-  cookieB = `ops_session=${createSession(userB)}`;
+  cookieA = `ops_session=${await createSession(userA)}`;
+  cookieB = `ops_session=${await createSession(userB)}`;
   visibleTask = (
     await call("tasks", "POST", {
       project_id: projectA,
@@ -261,21 +264,21 @@ test("customer approvals are attributed and immutable; foreign customers cannot 
       .status,
     409,
   );
-  const row = sql.prepare("SELECT * FROM approvals WHERE id=?").get(id);
+  const row = await sql.prepare("SELECT * FROM approvals WHERE id=?").get(id);
   assert.equal(row.decision_by, userA);
   assert.ok(row.decision_at);
 });
-test("magic links are single-use, expiring and restricted to known addresses", () => {
-  assert.equal(issueLogin("unknown@customer.test"), null);
-  const token = issueLogin("a@customer.test");
+test("magic links are single-use, expiring and restricted to known addresses", async () => {
+  assert.equal(await issueLogin("unknown@customer.test"), null);
+  const token = await issueLogin("a@customer.test");
   assert.ok(token);
-  assert.equal(redeemLogin(token), userA);
-  assert.equal(redeemLogin(token), undefined);
-  const expired = issueLogin("a@customer.test");
-  sql.prepare("UPDATE auth_tokens SET expires=0").run();
-  assert.equal(redeemLogin(expired), undefined);
-  for (let i = 0; i < 5; i++) issueLogin("admin@nexene.test");
-  assert.equal(issueLogin("admin@nexene.test"), null);
+  assert.equal(await redeemLogin(token), userA);
+  assert.equal(await redeemLogin(token), undefined);
+  const expired = await issueLogin("a@customer.test");
+  await sql.prepare("UPDATE auth_tokens SET expires=0").run();
+  assert.equal(await redeemLogin(expired), undefined);
+  for (let i = 0; i < 5; i++) await issueLogin("admin@nexene.test");
+  assert.equal(await issueLogin("admin@nexene.test"), null);
 });
 test("weekly recurrence produces one next task, including after reopening", async () => {
   const id = (
@@ -289,7 +292,7 @@ test("weekly recurrence produces one next task, including after reopening", asyn
   await call(`tasks/${id}`, "PATCH", { status: "done" });
   await call(`tasks/${id}`, "PATCH", { status: "todo" });
   await call(`tasks/${id}`, "PATCH", { status: "done" });
-  const all = sql
+  const all = await sql
     .prepare("SELECT * FROM tasks WHERE title='Weekly report'")
     .all();
   assert.equal(all.length, 2);
@@ -306,11 +309,13 @@ test("monthly recurrence clamps month-end dates", async () => {
   ).body.id;
   await call(`tasks/${id}`, "PATCH", { status: "done" });
   assert.equal(
-    sql
-      .prepare(
-        "SELECT due_date FROM tasks WHERE title='Monthly report' AND status='todo'",
-      )
-      .get().due_date,
+    (
+      await sql
+        .prepare(
+          "SELECT due_date FROM tasks WHERE title='Monthly report' AND status='todo'",
+        )
+        .get()
+    ).due_date,
     "2027-02-28",
   );
 });
@@ -384,10 +389,16 @@ test("validates links, document links, dates and numeric values", async () => {
 test("session revocation takes effect immediately and scoped data stays inaccessible", async () => {
   assert.equal((await call(`users/${userB}`, "DELETE")).status, 200);
   assert.equal((await call("state", "GET", null, cookieB)).status, 401);
-  assert.equal(issueLogin("b@customer.test"), null);
+  assert.equal(await issueLogin("b@customer.test"), null);
   assert.deepEqual(
-    (await call("state", "GET", null, `ops_session=${createSession(userB)}`))
-      .body.projects,
+    (
+      await call(
+        "state",
+        "GET",
+        null,
+        `ops_session=${await createSession(userB)}`,
+      )
+    ).body.projects,
     [],
   );
 });
@@ -399,7 +410,7 @@ test("document revisions prevent one admin from overwriting another admin's chan
       role: "admin",
     })
   ).body.id;
-  const cookie = `ops_session=${createSession(second)}`;
+  const cookie = `ops_session=${await createSession(second)}`;
   const created = (
     await call("documents", "POST", {
       project_id: projectA,
@@ -443,7 +454,9 @@ test("document revisions prevent one admin from overwriting another admin's chan
     ).status,
     409,
   );
-  const row = sql.prepare("SELECT * FROM documents WHERE id=?").get(created);
+  const row = await sql
+    .prepare("SELECT * FROM documents WHERE id=?")
+    .get(created);
   assert.equal(row.revision, 2);
   assert.deepEqual(JSON.parse(row.content), first);
   assert.equal(
@@ -473,19 +486,24 @@ test("SQLite online backup restores customers, projects and tasks into a clean d
   await backup(sql, file);
   const restored = new DatabaseSync(file);
   assert.equal(
-    restored.prepare("PRAGMA integrity_check").get().integrity_check,
+    (await restored.prepare("PRAGMA integrity_check").get()).integrity_check,
     "ok",
   );
   assert.equal(
-    restored.prepare("SELECT COUNT(*) count FROM customers").get().count,
+    (await restored.prepare("SELECT COUNT(*) count FROM customers").get())
+      .count,
     2,
   );
   assert.equal(
-    restored.prepare("SELECT name FROM projects WHERE id=?").get(projectA).name,
+    (
+      await restored
+        .prepare("SELECT name FROM projects WHERE id=?")
+        .get(projectA)
+    ).name,
     "Project A",
   );
   assert.ok(
-    restored.prepare("SELECT id FROM tasks WHERE id=?").get(visibleTask),
+    await restored.prepare("SELECT id FROM tasks WHERE id=?").get(visibleTask),
   );
   restored.close();
 });
@@ -498,26 +516,214 @@ test("schema migration preserves existing documents and is repeatable", async ()
   legacy.exec(
     "ALTER TABLE documents DROP COLUMN revision; DELETE FROM schema_migrations WHERE version=2;",
   );
-  const before = legacy
+  const before = await legacy
     .prepare("SELECT id,content FROM documents WHERE id=?")
     .get(document);
   legacy.close();
   const upgraded = new DatabaseSync(file);
   for (let i = 0; i < 2; i++) migrateDocuments(upgraded);
-  const row = upgraded
+  const row = await upgraded
     .prepare("SELECT * FROM documents WHERE id=?")
     .get(document);
   assert.equal(row.content, before.content);
   assert.equal(row.revision, 1);
   assert.ok(
-    upgraded
+    await upgraded
       .prepare("SELECT version FROM schema_migrations WHERE version=2")
       .get(),
   );
   upgraded.close();
 });
 
-after(() => {
+test("Vercel requires persistent remote storage and cannot fall back to a local file", async () => {
+  const { databaseConfiguration } = await import("../lib/database.mjs");
+  assert.throws(
+    () => databaseConfiguration({ VERCEL: "1" }),
+    /TURSO_DATABASE_URL/,
+  );
+  assert.throws(
+    () =>
+      databaseConfiguration({
+        VERCEL: "1",
+        TURSO_DATABASE_URL: "file:/tmp/ops.sqlite",
+      }),
+    /remote/,
+  );
+  assert.throws(
+    () =>
+      databaseConfiguration({
+        VERCEL: "1",
+        TURSO_DATABASE_URL: "libsql://example.turso.io",
+      }),
+    /TURSO_AUTH_TOKEN/,
+  );
+  assert.equal(
+    databaseConfiguration({
+      VERCEL: "1",
+      TURSO_DATABASE_URL: "libsql://example.turso.io",
+      TURSO_AUTH_TOKEN: "test",
+    }).url,
+    "libsql://example.turso.io",
+  );
+});
+
+test("Vercel login and origin checks use trusted deployment URLs", async () => {
+  const { applicationUrl } = await import("../lib/config.mjs");
+  assert.equal(
+    applicationUrl({
+      VERCEL: "1",
+      VERCEL_ENV: "production",
+      VERCEL_PROJECT_PRODUCTION_URL: "ops.example.com",
+      VERCEL_URL: "build.vercel.app",
+    }),
+    "https://ops.example.com",
+  );
+  assert.equal(
+    applicationUrl({
+      VERCEL: "1",
+      VERCEL_ENV: "preview",
+      VERCEL_URL: "preview.vercel.app",
+    }),
+    "https://preview.vercel.app",
+  );
+  assert.equal(
+    applicationUrl({ VERCEL: "1", APP_URL: "https://ops.nexene.test/" }),
+    "https://ops.nexene.test",
+  );
+  assert.throws(
+    () => applicationUrl({ VERCEL: "1", APP_URL: "http://ops.example.com" }),
+    /HTTPS/,
+  );
+  assert.throws(
+    () => applicationUrl({ APP_URL: "https://ops.example.com/path" }),
+    /origin/,
+  );
+});
+
+test("libSQL initialization is repeatable and stored data survives a new client", async () => {
+  const { createClient } = await import("@libsql/client");
+  const { SqlDatabase, initializeDatabase } =
+    await import("../lib/database.mjs");
+  const url = "file:" + join(temp, "fresh.sqlite");
+  let storage = new SqlDatabase(createClient({ url }));
+  await initializeDatabase(storage);
+  await storage
+    .prepare("INSERT INTO customers(id,name,initials) VALUES(?,?,?)")
+    .run("fresh", "Persistent data", "PD");
+  assert.equal(
+    (await storage.prepare("PRAGMA foreign_keys").get()).foreign_keys,
+    1,
+  );
+  storage.close();
+  storage = new SqlDatabase(createClient({ url }));
+  await initializeDatabase(storage);
+  assert.equal(
+    (
+      await storage
+        .prepare("SELECT name FROM customers WHERE id=?")
+        .get("fresh")
+    ).name,
+    "Persistent data",
+  );
+  assert.equal(
+    (
+      await storage
+        .prepare("SELECT version FROM schema_migrations WHERE version=2")
+        .get()
+    ).version,
+    2,
+  );
+  const created = (
+    await storage.prepare("PRAGMA table_info(documents)").all()
+  ).find((column) => column.name === "revision");
+  assert.ok(created);
+  storage.close();
+});
+
+test("a failed transaction rolls back all writes", async () => {
+  const { database } = await import("../lib/database.mjs");
+  const storage = await database();
+  await assert.rejects(
+    storage.transaction(async (tx) => {
+      await tx
+        .prepare("INSERT INTO customers(id,name,initials) VALUES(?,?,?)")
+        .run("rollback", "Must not persist", "NO");
+      throw new Error("abort");
+    }),
+    /abort/,
+  );
+  assert.equal(
+    sql.prepare("SELECT id FROM customers WHERE id=?").get("rollback"),
+    undefined,
+  );
+});
+
+test("simultaneous login requests obey the limit and a token redeems once", async () => {
+  await call("users", "POST", {
+    name: "Parallel Admin",
+    email: "parallel@nexene.test",
+    role: "admin",
+  });
+  const tokens = await Promise.all(
+    Array.from({ length: 8 }, () => issueLogin("parallel@nexene.test")),
+  );
+  assert.equal(tokens.filter(Boolean).length, 5);
+  const redemptions = await Promise.all([
+    redeemLogin(tokens.find(Boolean)),
+    redeemLogin(tokens.find(Boolean)),
+  ]);
+  assert.equal(redemptions.filter(Boolean).length, 1);
+});
+
+test("simultaneous customer approvals and document writes have a single winner", async () => {
+  const approval = (
+    await call("approvals", "POST", {
+      project_id: projectA,
+      title: "Concurrent approval",
+      reference: "Version 1",
+    })
+  ).body.id;
+  const decisions = await Promise.all([
+    call(`approvals/${approval}`, "PATCH", { status: "approved" }, cookieA),
+    call(`approvals/${approval}`, "PATCH", { status: "changes" }, cookieA),
+  ]);
+  assert.deepEqual(decisions.map((r) => r.status).sort(), [200, 409]);
+  const page = (
+    await call("documents", "POST", {
+      project_id: projectA,
+      title: "Concurrent page",
+    })
+  ).body.id;
+  const updates = await Promise.all([
+    call(`documents/${page}`, "PATCH", {
+      expected_revision: 1,
+      title: "First",
+    }),
+    call(`documents/${page}`, "PATCH", {
+      expected_revision: 1,
+      title: "Second",
+    }),
+  ]);
+  assert.deepEqual(updates.map((r) => r.status).sort(), [200, 409]);
+});
+
+test("project templates create every task within the transaction", async () => {
+  const result = await call("projects", "POST", {
+    customer_id: customerA,
+    name: "Template project",
+    due_date: "2027-12-31",
+  });
+  assert.equal(result.status, 201);
+  assert.equal(
+    sql
+      .prepare("SELECT COUNT(*) n FROM tasks WHERE project_id=?")
+      .get(result.body.id).n,
+    9,
+  );
+});
+
+after(async () => {
+  await closeDatabase();
   sql.close();
   rmSync(temp, { recursive: true, force: true });
 });

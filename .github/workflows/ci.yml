@@ -3,6 +3,11 @@ on:
   push:
   pull_request:
   workflow_dispatch:
+    inputs:
+      publish_docker:
+        description: Build the optional private Docker image
+        type: boolean
+        default: false
 permissions:
   contents: read
 jobs:
@@ -16,6 +21,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
+      - run: npm run test:libsql
       - run: npm run typecheck
       - run: npm run build
       - run: npx playwright install --with-deps chromium
@@ -24,7 +30,7 @@ jobs:
   publish:
     name: Publish private Docker image
     needs: verify
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && inputs.publish_docker
     runs-on: ubuntu-latest
     permissions:
       contents: read

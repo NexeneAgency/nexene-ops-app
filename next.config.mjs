@@ -1,8 +1,8 @@
 export default {
   distDir: process.env.NEXENE_BUILD_DIR || ".next",
   experimental: { useTypeScriptCli: false },
-  output: "standalone",
-  serverExternalPackages: ["nodemailer"],
+  output: process.env.VERCEL ? undefined : "standalone",
+  serverExternalPackages: ["nodemailer", "@libsql/client"],
   async headers() {
     return [
       {

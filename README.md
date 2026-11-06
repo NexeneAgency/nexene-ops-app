@@ -1,8 +1,10 @@
 # Nexene Ops
 
-Für Hostinger **„Aus URL erstellen“**: [Deployment-Anleitung](docs/HOSTINGER.md). Die Hauptdatei `compose.yaml` baut aus dem öffentlichen Git-Repository auf dem VPS; dafür ist kein Registry-Token nötig.
+**Hosting auf Vercel:** [Einrichtung mit Turso-Datenbank](docs/VERCEL.md). Kein Docker, VPS oder eigener Reverse Proxy nötig.
 
-Funktionsfähiger Entwicklungsstand für den Nexene-Agenturworkspace. Next.js App Router, React mit streng geprüftem TypeScript, SQLite (Node.js 24), Tiptap. Die serverseitige Fachlogik bleibt in getesteten JavaScript-Modulen; gemeinsame API-Datenverträge sind typisiert. Kein separater Datenbankserver. Slack und Hermes sind V2.
+Die bisherige [Hostinger-Anleitung](docs/HOSTINGER.md) bleibt für den alternativen Docker-Betrieb verfügbar.
+
+Funktionsfähiger Entwicklungsstand für den Nexene-Agenturworkspace. Next.js App Router, React mit streng geprüftem TypeScript, SQLite/Turso-libSQL (Node.js 24), Tiptap. Die serverseitige Fachlogik bleibt in getesteten JavaScript-Modulen; gemeinsame API-Datenverträge sind typisiert. Kein separater Datenbankserver. Slack und Hermes sind V2.
 
 Die Oberfläche verwendet die Nexene-CI: Vermillion Grey 1 `#F8F1F1`, Night Black `#0C0910`, Vermillion `#F64740`. Kleine Akzenttexte verwenden einen dunkleren Rotton für ausreichenden Kontrast. Die Hauptnavigation, Dialoge und Aufgaben sind per Tastatur bedienbar. Native modale Dialoge begrenzen den Fokus, schließen mit Escape und geben den Fokus an den Auslöser zurück.
 
@@ -42,6 +44,7 @@ E-Mail-Adressen werden durch Admins freigeschaltet. Kontakte verwenden anschlie�
 
 ```sh
 npm test
+npm run test:libsql
 npm run typecheck
 npm run build
 npm run test:browser
@@ -97,4 +100,4 @@ Wiederherstellung: Anwendung stoppen, ausgewählte Sicherung als `ops.sqlite` in
 
 ## Struktur
 
-`app/features/`: eigenständige Bereiche für Projekte, Aufgaben, Dokumente, Kunden und Verwaltung. `app/ui/`: gemeinsame UI-Bausteine und modale Dialoge. `app/use-workspace.tsx`: gemeinsamer Anwendungszustand. `lib/types.ts`: Datenverträge. `lib/client.ts`: HTTP-Client mit Zeitlimit und Fehlerbehandlung. `lib/i18n.ts`: UI-Texte. `lib/db.mjs`: Schema und Datenhaltung. `lib/api.mjs`: Validierung, Zugriffskontrolle und Fachabläufe. `lib/auth.mjs`: Anmeldung, Sitzungen und Mail. `scripts/backup.mjs`: konsistente Sicherung. Daten liegen zentral in SQLite. Ein späterer Datenbankwechsel erfordert eine geplante Datenmigration.
+`app/features/`: eigenständige Bereiche für Projekte, Aufgaben, Dokumente, Kunden und Verwaltung. `app/ui/`: gemeinsame UI-Bausteine und modale Dialoge. `app/use-workspace.tsx`: gemeinsamer Anwendungszustand. `lib/types.ts`: Datenverträge. `lib/client.ts`: HTTP-Client mit Zeitlimit und Fehlerbehandlung. `lib/i18n.ts`: UI-Texte. `lib/database.mjs`: asynchroner libSQL-Zugriff und transaktionale Initialisierung für Turso/Vercel. `lib/schema.mjs`: gemeinsames Schema. `lib/db.mjs`: lokale SQLite-Initialisierung. `lib/api.mjs`: Validierung, Zugriffskontrolle und Fachabläufe. `lib/auth.mjs`: Anmeldung, Sitzungen und Mail. `scripts/backup.mjs`: konsistente Sicherung. Daten liegen zentral in SQLite. Ein späterer Datenbankwechsel erfordert eine geplante Datenmigration.

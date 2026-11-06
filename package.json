@@ -4,18 +4,20 @@
   "private": true,
   "type": "module",
   "engines": {
-    "node": ">=24.0.0"
+    "node": "24.x"
   },
   "scripts": {
     "dev": "next dev --hostname 0.0.0.0",
     "build": "next build",
     "start": "next start --hostname 0.0.0.0",
     "test": "node --test --test-isolation=none tests/*.test.mjs",
+    "test:libsql": "node tests/libsql.mjs",
     "typecheck": "tsc --noEmit",
     "test:browser": "node tests/run-browser.mjs",
     "backup": "node scripts/backup.mjs"
   },
   "dependencies": {
+    "@libsql/client": "^0.18.0",
     "@tiptap/react": "^3.0.0",
     "@tiptap/starter-kit": "^3.0.0",
     "lucide-react": "^0.468.0",
