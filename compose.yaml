@@ -7,9 +7,15 @@ services:
     restart: unless-stopped
     ports:
       - "127.0.0.1:3000:3000"
-    env_file:
-      - /opt/nexene-ops/.env
     environment:
+      APP_URL: ${APP_URL:-}
+      ADMIN_EMAILS: ${ADMIN_EMAILS:-}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      MAIL_FROM: ${MAIL_FROM:-}
       NODE_ENV: production
       DATA_DIR: /app/data
       DEV_MAIL_LOG: "false"

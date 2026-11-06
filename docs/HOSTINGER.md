@@ -8,28 +8,30 @@ https://raw.githubusercontent.com/NexeneAgency/nexene-ops-app/main/compose.yaml
 
 Voraussetzung: Das App-Repository ist öffentlich. Hostinger importiert die Compose-Datei; Docker lädt den öffentlichen Git-Quellcode und baut das Image auf dem VPS. Der erste Start dauert deshalb länger als das Abrufen eines fertigen Images. Es sind weder ein Registry-Token noch ein separates Deployment-Repository nötig.
 
-## 1. Einstellungen einmalig auf dem VPS speichern
+## 1. Compose importieren
 
-In Hostingers Webkonsole als root (gegebenenfalls zuerst `sudo -i`):
+In Hostinger **Aus URL erstellen** auswählen und die oben genannte Compose-URL eintragen. Die Hauptdatei benötigt keine vorher angelegte Datei auf dem VPS und keinen SSH-Zugang.
 
-```sh
-install -d -m 700 /opt/nexene-ops
-curl --fail --show-error --location \
-  https://raw.githubusercontent.com/NexeneAgency/nexene-ops-app/main/deploy/env.example \
-  -o /opt/nexene-ops/.env
-chmod 600 /opt/nexene-ops/.env
-nano /opt/nexene-ops/.env
-```
+## 2. Einstellungen in Hostinger hinterlegen
 
-Alle Beispiele durch die echte HTTPS-Adresse, die freigeschalteten Admin-E-Mail-Adressen und SMTP-Zugangsdaten ersetzen. Mehrere Admin-Adressen mit Komma trennen. Port 587 verwendet STARTTLS mit `SMTP_SECURE=false`, Port 465 verwendet `SMTP_SECURE=true`. Zugangsdaten nicht in GitHub hochladen.
+Im Anwendungseditor unter **Umgebung → + Umgebung** diese Variablen setzen. Die Compose-Datei reicht sie ausdrücklich an den Container `ops` weiter.
 
-## 2. In Hostinger bereitstellen
+| Variable       | Wert                                                             |
+| -------------- | ---------------------------------------------------------------- |
+| `APP_URL`      | Eure tatsächliche HTTPS-Adresse, z. B. `https://ops.example.com` |
+| `ADMIN_EMAILS` | Freigeschaltete E-Mail-Adressen, durch Komma getrennt            |
+| `SMTP_HOST`    | SMTP-Server eures Anbieters                                      |
+| `SMTP_PORT`    | `587` für STARTTLS oder `465` für direktes TLS                   |
+| `SMTP_SECURE`  | `false` bei Port 587, `true` bei Port 465                        |
+| `SMTP_USER`    | SMTP-Benutzername                                                |
+| `SMTP_PASS`    | SMTP-Passwort                                                    |
+| `MAIL_FROM`    | Erlaubter Absender, z. B. `Nexene Ops <ops@example.com>`         |
 
-**URL:** `https://raw.githubusercontent.com/NexeneAgency/nexene-ops-app/main/compose.yaml`
+Dann **Bereitstellen** auswählen. Zugangsdaten nur in Hostinger speichern, nicht in GitHub oder im Chat. Die leeren Standardwerte in Compose ermöglichen den Import ohne vorherige Konfiguration; vor dem Einsatz müssen die tatsächlichen Werte gesetzt werden. Ohne freigeschaltete Admin-Adresse und SMTP funktioniert die Anmeldung nicht.
 
-**Anwendungsname:** `nexene-ops`
+Falls die Anwendung schon angelegt ist: dieselben Umgebungsvariablen ergänzen und erneut bereitstellen. Bei einer bereits importierten älteren Compose-Datei im **.yaml-Editor** den Block `env_file: - /opt/nexene-ops/.env` entfernen und den `environment`-Block aus der aktuellen Compose-Datei übernehmen. Hostinger aktualisiert eine zuvor importierte Datei nicht zwingend automatisch aus GitHub. Vorhandene Portzuordnungen und Volumes dabei beibehalten.
 
-Dann **Bereitstellen** auswählen. Der Build benötigt den öffentlichen Quellcode und Zugriff auf Docker Hub und npm. Es wird kein Image aus der GitHub Container Registry benötigt.
+Der Build läuft auf dem VPS und benötigt Zugriff auf den öffentlichen Quellcode, Docker Hub und npm. Ein Registry-Login ist nicht nötig.
 
 ## 3. Domain und HTTPS
 
