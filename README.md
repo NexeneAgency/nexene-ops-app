@@ -1,5 +1,7 @@
 # Nexene Ops
 
+Für Hostinger **„Aus URL erstellen“**: [Deployment-Anleitung](docs/HOSTINGER.md). Die Hauptdatei `compose.yaml` baut aus dem öffentlichen Git-Repository auf dem VPS; dafür ist kein Registry-Token nötig.
+
 Funktionsfähiger Entwicklungsstand für den Nexene-Agenturworkspace. Next.js App Router, React mit streng geprüftem TypeScript, SQLite (Node.js 24), Tiptap. Die serverseitige Fachlogik bleibt in getesteten JavaScript-Modulen; gemeinsame API-Datenverträge sind typisiert. Kein separater Datenbankserver. Slack und Hermes sind V2.
 
 Die Oberfläche verwendet die Nexene-CI: Vermillion Grey 1 `#F8F1F1`, Night Black `#0C0910`, Vermillion `#F64740`. Kleine Akzenttexte verwenden einen dunkleren Rotton für ausreichenden Kontrast. Die Hauptnavigation, Dialoge und Aufgaben sind per Tastatur bedienbar. Native modale Dialoge begrenzen den Fokus, schließen mit Escape und geben den Fokus an den Auslöser zurück.
@@ -67,8 +69,10 @@ cp .env.example .env
 mkdir -p backups
 # Container läuft als node (UID 1000); Backup-Verzeichnis für diese UID schreibbar machen.
 sudo chown 1000:1000 backups
-docker compose up -d --build
+docker compose -f compose.local.yaml up -d --build
 ```
+
+Diese Befehle verwenden die Variante für einen lokalen Checkout (`compose.local.yaml`). Für den URL-Import die oben verlinkte Hostinger-Anleitung verwenden.
 
 Ein bestehender Reverse Proxy (z. B. Caddy/Nginx) terminiert HTTPS und leitet auf `127.0.0.1:3000` weiter. Eine einzelne App-Instanz betreiben; SQLite liegt lokal im benannten Volume `ops_data`. Das Volume bei Updates behalten. `docker compose down -v` löscht die Daten und darf nicht für normale Updates verwendet werden. Geheimnisse ausschließlich auf dem Server konfigurieren.
 
@@ -86,7 +90,7 @@ SQLite-Online-Backup ist auch bei laufender Anwendung konsistent; das Skript pr�
 # Lokal (DATA_DIR ggf. setzen):
 npm run backup
 # Im Container:
-docker compose exec ops node scripts/backup.mjs
+docker compose -f compose.local.yaml exec ops node scripts/backup.mjs
 ```
 
 Wiederherstellung: Anwendung stoppen, ausgewählte Sicherung als `ops.sqlite` in ein **leeres** Datenvolume kopieren, Dateirechte auf UID 1000 setzen, Anwendung starten. Alte `ops.sqlite-wal` und `ops.sqlite-shm` dürfen dabei nicht übernommen werden. Zuerst in einer separaten Instanz prüfen. Nach Wiederherstellung bei Bedarf `DELETE FROM sessions; DELETE FROM auth_tokens;` mit SQLite ausführen, um gesicherte Sitzungen/Links zu entwerten. Das Repository enthält keine Produktionsdaten.
