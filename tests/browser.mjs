@@ -46,7 +46,7 @@ try {
     .waitFor();
   assert.equal(new URL(page.url()).searchParams.has("token"), false);
   const output =
-    process.env.TEST_SCREENSHOTS || "/workspace/work/nexene-screenshots";
+    process.env.TEST_SCREENSHOTS || resolve("test-results", "screenshots");
   mkdirSync(output, { recursive: true });
   await page.screenshot({
     path: resolve(output, "dashboard.png"),
