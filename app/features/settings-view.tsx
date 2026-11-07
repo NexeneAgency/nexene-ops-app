@@ -59,7 +59,7 @@ export function SettingsView() {
                 </td>
                 <td>
                   {data.customers.find((c) => c.id === u.customer_id)?.name ||
-                    "—"}
+                    t("noCustomer")}
                 </td>
                 <td>
                   {u.role === "customer" && u.customer_id && (

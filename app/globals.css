@@ -2486,3 +2486,59 @@ dialog::backdrop {
     scroll-behavior: auto !important;
   }
 }
+
+/* Project progress and inline customer creation */
+.project-progress-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin: 16px 0 24px;
+  font-size: 14px;
+}
+.phase-weights,
+.inline-customer {
+  border: 1px solid var(--grey-2);
+  border-radius: 12px;
+  margin: 0;
+  padding: 16px;
+  min-width: 0;
+}
+.phase-weights legend,
+.inline-customer legend {
+  font-size: 14px;
+  font-weight: 600;
+  padding: 0 6px;
+}
+.inline-customer {
+  display: grid;
+  gap: 14px;
+  background: var(--grey-1);
+}
+.phase-weight-grid {
+  display: grid;
+  gap: 8px;
+  margin: 16px 0;
+}
+.phase-weight-grid label {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 76px 16px;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+.phase-weight-grid input {
+  width: 100%;
+}
+.weight-warning {
+  color: #962b27;
+}
+.phase-weight-details summary {
+  cursor: pointer;
+  font-size: 14px;
+  padding: 8px 0;
+}
+.phase-weight-details[open] summary {
+  margin-bottom: 8px;
+}

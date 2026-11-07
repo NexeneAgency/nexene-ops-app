@@ -48,7 +48,7 @@ export function Dashboard() {
                 <Icon size={17} />
               </span>
             </div>
-            <strong>{String(value).padStart(2, "0")}</strong>
+            <strong>{value}</strong>
             <small>
               {lang === "de" ? "In deinem Workspace" : "In your workspace"}
             </small>
@@ -88,8 +88,8 @@ export function Dashboard() {
       />
       <div className="workspace-footer">
         <span className="footer-mark">N</span>
-        <span>MAKE SPACE FOR GOOD WORK.</span>
-        <span>NEXENE OPS · V1</span>
+        <span>{t("workspace")}</span>
+        <span>NEXENE OPS · V1.1</span>
       </div>
     </>
   );

@@ -2,6 +2,8 @@
 import { LoaderCircle, X } from "lucide-react";
 import type { HTMLInputTypeAttribute } from "react";
 import { useState } from "react";
+import { defaultPhaseWeights } from "../../lib/project-phases.mjs";
+import { PhaseWeightFields } from "./phase-weights";
 import { Dialog } from "../ui/dialog";
 
 import { errorMessage, today } from "../../lib/client";
@@ -36,7 +38,11 @@ export function FormModal({
     [project, setProject] = useState(
       m.project_id || data.projects[0]?.id || "",
     ),
-    [template, setTemplate] = useState("");
+    [template, setTemplate] = useState(""),
+    [customer, setCustomer] = useState(data.customers[0]?.id || "__new__"),
+    [weights, setWeights] = useState<Record<string, number>>({
+      ...defaultPhaseWeights,
+    });
   const type = m.type;
   const titles = {
     project: "newProject",
@@ -73,12 +79,13 @@ export function FormModal({
     <label>
       {t("project")}
       <select
+        aria-label={t("project")}
         name="project_id"
         value={project}
         onChange={(e) => setProject(e.target.value)}
         required
       >
-        <option value="">—</option>
+        <option value="">{t("selectProject")}</option>
         {data.projects.map((p) => (
           <option key={p.id} value={p.id}>
             {p.name}
@@ -138,7 +145,19 @@ export function FormModal({
               body.task_id = m.task_id;
               path = "attachments";
             }
-            if (type === "project") body.template = true;
+            if (type === "project") {
+              body.template = true;
+              body.phase_weights = weights;
+              if (customer === "__new__") {
+                delete body.customer_id;
+                body.new_customer = {
+                  name: body.customer_name,
+                  logo: body.customer_logo,
+                };
+                delete body.customer_name;
+                delete body.customer_logo;
+              }
+            }
             if (type === "document") {
               body.is_template = f.get("is_template") === "on";
               if (template)
@@ -163,11 +182,14 @@ export function FormModal({
             <label>
               {t("customer")}
               <select
+                aria-label={t("customer")}
                 name="customer_id"
                 required
-                defaultValue={data.customers[0]?.id || ""}
+                value={customer}
+                onChange={(e) => setCustomer(e.target.value)}
               >
-                <option value="">—</option>
+                <option value="">{t("selectCustomer")}</option>
+                <option value="__new__">{t("createCustomerInline")}</option>
                 {data.customers.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.name}
@@ -175,12 +197,13 @@ export function FormModal({
                 ))}
               </select>
             </label>
-            {!data.customers.length && (
-              <p className="form-note">
-                {lang === "de"
-                  ? "Lege zuerst unter Kunden einen Kunden an."
-                  : "Create a customer first."}
-              </p>
+            {customer === "__new__" && (
+              <fieldset className="inline-customer">
+                <legend>{t("newCustomer")}</legend>
+                {field("customer_name", "customerName", "text", true)}
+                {field("customer_logo", "logo", "url")}
+                <p className="form-note">{t("inlineCustomerHelp")}</p>
+              </fieldset>
             )}
             {field("name", "name", "text", true)}
             <label>
@@ -202,11 +225,38 @@ export function FormModal({
               {field("budget", "budget", "number", false, 0)}
               {field("hours_budget", "hours", "number", false, 0)}
             </div>
+            <details className="phase-weight-details">
+              <summary>{t("editPhaseWeights")}</summary>
+              <PhaseWeightFields
+                weights={weights}
+                onChange={setWeights}
+                t={t}
+              />
+            </details>
           </>
         )}
         {type === "task" && (
           <>
             {projectSelect}
+            {!m.parent_id && (
+              <label>
+                {t("phase")}
+                <select
+                  aria-label={t("phase")}
+                  name="phase"
+                  key={project}
+                  defaultValue={
+                    data.projects.find((p) => p.id === project)?.phase
+                  }
+                >
+                  {data.phases.map((phase) => (
+                    <option key={phase} value={phase}>
+                      {t(`phase:${phase}`)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
             {field("title", "title", "text", true)}
             <label>
               {t("description")}
@@ -259,7 +309,7 @@ export function FormModal({
             <label>
               {t("parent")}
               <select name="parent_id" defaultValue={m.parent_id || ""}>
-                <option value="">—</option>
+                <option value="">{t("noParent")}</option>
                 {data.documents
                   .filter((d) => d.project_id === project)
                   .map((d) => (
@@ -311,11 +361,12 @@ export function FormModal({
               <label>
                 {t("customer")}
                 <select
+                  aria-label={t("customer")}
                   name="customer_id"
                   required
                   defaultValue={m.customer_id || ""}
                 >
-                  <option value="">—</option>
+                  <option value="">{t("selectCustomer")}</option>
                   {data.customers.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.name}
@@ -376,7 +427,14 @@ export function FormModal({
           <button
             className="primary"
             aria-label={t(type === "decision" ? titles[type] : "create")}
-            disabled={busy}
+            disabled={
+              busy ||
+              (type === "project" &&
+                Object.values(weights).reduce(
+                  (sum, weight) => sum + weight,
+                  0,
+                ) !== 100)
+            }
           >
             {busy ? (
               <LoaderCircle className="spin" size={17} />

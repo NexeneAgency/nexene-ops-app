@@ -82,7 +82,7 @@ export function TaskTable({ list }: { list: Task[] }) {
                       {data.users.find((u) => u.id === task.assignee_id)?.name}
                     </span>
                   ) : (
-                    <span className="muted">—</span>
+                    <span className="muted">{t("none")}</span>
                   )}
                 </td>
               )}

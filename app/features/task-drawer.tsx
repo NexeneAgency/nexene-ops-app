@@ -43,9 +43,32 @@ export function TaskDrawer() {
       {task.description && <p>{task.description}</p>}
       <div className="task-properties">
         <label>
+          {t("phase")}
+          {admin && !task.parent_id ? (
+            <select
+              aria-label={t("phase")}
+              value={task.phase}
+              onChange={(e) =>
+                mutate(`tasks/${task.id}`, "PATCH", {
+                  phase: e.target.value,
+                }).catch(() => {})
+              }
+            >
+              {data.phases.map((phase) => (
+                <option key={phase} value={phase}>
+                  {t(`phase:${phase}`)}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <span>{t(`phase:${task.phase}`)}</span>
+          )}
+        </label>
+        <label>
           {t("status")}
           {admin ? (
             <select
+              aria-label={t("status")}
               value={task.status}
               onChange={(e) =>
                 mutate(`tasks/${task.id}`, "PATCH", {

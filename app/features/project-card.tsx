@@ -16,10 +16,10 @@ export function ProjectCard({ p }: { p: Project }) {
     fmt,
     projects,
     tasks,
-    taskProgress,
+    projectProgress,
   } = useWorkspace();
 
-  const progress = taskProgress(p.id),
+  const progress = projectProgress(p.id),
     count = data.tasks.filter(
       (t) => t.project_id === p.id && t.status !== "done",
     ).length;
@@ -38,7 +38,7 @@ export function ProjectCard({ p }: { p: Project }) {
       </div>
       <span className="customer-label">{p.customer_name}</span>
       <h3>{p.name}</h3>
-      <Badge status="progress">{p.phase}</Badge>
+      <Badge status="progress">{t(`phase:${p.phase}`)}</Badge>
       <div className="progress-label">
         <span>{lang === "de" ? "Fortschritt" : "Progress"}</span>
         <strong>{progress}%</strong>

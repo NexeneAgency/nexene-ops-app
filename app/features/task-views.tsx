@@ -196,7 +196,7 @@ export function TaskViews() {
                   {fmt(task.due_date)}
                 </i>
               ) : (
-                <small>—</small>
+                <small>{t("noDate")}</small>
               )}
             </div>
           </button>

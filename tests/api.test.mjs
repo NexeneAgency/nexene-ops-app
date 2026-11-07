@@ -722,6 +722,225 @@ test("project templates create every task within the transaction", async () => {
   );
 });
 
+test("v1.1 project phase weights affect progress independently of task counts", async () => {
+  const { phases, defaultPhaseWeights } =
+    await import("../lib/project-phases.mjs");
+  const created = await call("projects", "POST", {
+    customer_id: customerA,
+    name: "Weighted project",
+    due_date: "2027-12-31",
+  });
+  assert.equal(created.status, 201);
+  const id = created.body.id;
+  const templateTasks = sql
+    .prepare("SELECT * FROM tasks WHERE project_id=?")
+    .all(id);
+  assert.equal(templateTasks.length, 9);
+  assert.deepEqual(
+    templateTasks.map((t) => t.phase).sort(),
+    [...phases].sort(),
+  );
+  const development = templateTasks.find((t) => t.phase === "Entwicklung");
+  await call(`tasks/${development.id}`, "PATCH", { status: "done" });
+  const projectState = async (cookie = adminCookie) =>
+    (await call("state", "GET", null, cookie)).body.projects.find(
+      (p) => p.id === id,
+    );
+  assert.equal((await projectState()).progress, 30);
+  const weights = { ...defaultPhaseWeights, Entwicklung: 50, Design: 0 };
+  assert.equal(
+    (await call(`projects/${id}`, "PATCH", { phase_weights: weights })).status,
+    200,
+  );
+  assert.equal((await projectState()).progress, 50);
+  const subtask = await call("tasks", "POST", {
+    project_id: id,
+    parent_id: development.id,
+    title: "Subtask",
+  });
+  assert.equal(subtask.status, 201);
+  assert.equal(
+    (await projectState()).progress,
+    50,
+    "subtasks must not count twice",
+  );
+  const extra = await call("tasks", "POST", {
+    project_id: id,
+    phase: "Entwicklung",
+    title: "Second development task",
+  });
+  assert.equal(extra.status, 201);
+  assert.equal((await projectState()).progress, 25);
+  const contact = await call("users", "POST", {
+    name: "Progress contact",
+    email: "progress@customer.test",
+    customer_id: customerA,
+  });
+  const customerCookie = `ops_session=${await createSession(contact.body.id)}`;
+  assert.equal(
+    (await projectState(customerCookie)).progress,
+    25,
+    "portal uses full aggregate even when tasks are internal",
+  );
+  assert.equal(
+    (
+      await call(
+        `projects/${id}`,
+        "PATCH",
+        { phase_weights: defaultPhaseWeights },
+        customerCookie,
+      )
+    ).status,
+    403,
+  );
+  assert.equal(
+    (await call(`tasks/${extra.body.id}`, "PATCH", { phase: "Unknown" }))
+      .status,
+    400,
+  );
+  assert.equal(
+    (await call(`tasks/${development.id}`, "PATCH", { phase: "Design" }))
+      .status,
+    200,
+  );
+  assert.equal(
+    sql.prepare("SELECT phase FROM tasks WHERE id=?").get(subtask.body.id)
+      .phase,
+    "Design",
+  );
+  for (const invalid of [
+    { ...weights, Design: 5 },
+    { ...weights, Design: -1, Entwicklung: 51 },
+    { ...weights, Design: "0" },
+    {},
+    null,
+  ]) {
+    assert.equal(
+      (await call(`projects/${id}`, "PATCH", { phase_weights: invalid }))
+        .status,
+      400,
+    );
+  }
+  assert.deepEqual((await projectState()).phase_weights, weights);
+});
+
+test("v1.1 inline customer creation is atomic with its project", async () => {
+  const customerCount = () =>
+    sql.prepare("SELECT count(*) n FROM customers").get().n;
+  const before = customerCount();
+  const invalid = await call("projects", "POST", {
+    new_customer: { name: "Should not remain" },
+    name: "",
+    due_date: "2027-12-31",
+  });
+  assert.equal(invalid.status, 400);
+  assert.equal(
+    customerCount(),
+    before,
+    "customer insert rolls back if project creation fails",
+  );
+  const created = await call("projects", "POST", {
+    new_customer: {
+      name: "Inline customer",
+      logo: "https://example.com/logo.svg",
+    },
+    name: "Inline project",
+    due_date: "2027-12-31",
+  });
+  assert.equal(created.status, 201);
+  const project = sql
+    .prepare("SELECT * FROM projects WHERE id=?")
+    .get(created.body.id);
+  const customer = sql
+    .prepare("SELECT * FROM customers WHERE id=?")
+    .get(project.customer_id);
+  assert.equal(customer.name, "Inline customer");
+  assert.equal(customer.logo, "https://example.com/logo.svg");
+  assert.equal(customerCount(), before + 1);
+  assert.equal(
+    (await call("projects", "POST", { new_customer: [], name: "Bad" })).status,
+    400,
+  );
+  assert.equal(
+    (
+      await call("projects", "POST", {
+        new_customer: { name: "Bad" },
+        customer_id: customerA,
+        name: "Bad",
+      })
+    ).status,
+    400,
+  );
+});
+
+test("v1.1 migrates existing project phases without changing tasks or documents", async () => {
+  const { schema } = await import("../lib/schema.mjs");
+  const { initializeDatabase, SqlDatabase } =
+    await import("../lib/database.mjs");
+  const { createClient } = await import("@libsql/client");
+  const { defaultPhaseWeights } = await import("../lib/project-phases.mjs");
+  const client = createClient({
+    url: `file:${join(temp, "legacy-phases.sqlite")}`,
+    intMode: "number",
+  });
+  const legacy = new SqlDatabase(client);
+  try {
+    await legacy.exec(schema);
+    await legacy
+      .prepare(
+        "INSERT INTO customers(id,name,initials) VALUES('legacy-c','Legacy','L')",
+      )
+      .run();
+    await legacy
+      .prepare(
+        "INSERT INTO projects(id,customer_id,name,phase,start_date,due_date) VALUES('legacy-p','legacy-c','Legacy project','Design','2026-01-01','2027-01-01')",
+      )
+      .run();
+    await legacy
+      .prepare(
+        "INSERT INTO tasks(id,project_id,title,status) VALUES('legacy-t','legacy-p','Entwicklung','done'),('legacy-free','legacy-p','Custom task','progress')",
+      )
+      .run();
+    await legacy
+      .prepare(
+        "INSERT INTO documents(id,project_id,title,content) VALUES('legacy-d','legacy-p','Keep me','{}')",
+      )
+      .run();
+    await initializeDatabase(legacy);
+    await initializeDatabase(legacy);
+    const project = await legacy
+      .prepare("SELECT * FROM projects WHERE id='legacy-p'")
+      .get();
+    assert.equal(project.name, "Legacy project");
+    assert.deepEqual(JSON.parse(project.phase_weights), defaultPhaseWeights);
+    assert.equal(
+      (await legacy.prepare("SELECT * FROM tasks WHERE id='legacy-t'").get())
+        .phase,
+      "Entwicklung",
+    );
+    assert.equal(
+      (await legacy.prepare("SELECT * FROM tasks WHERE id='legacy-t'").get())
+        .status,
+      "done",
+    );
+    assert.equal(
+      (await legacy.prepare("SELECT * FROM tasks WHERE id='legacy-free'").get())
+        .phase,
+      "Design",
+    );
+    assert.equal(
+      (
+        await legacy
+          .prepare("SELECT * FROM documents WHERE id='legacy-d'")
+          .get()
+      ).title,
+      "Keep me",
+    );
+  } finally {
+    legacy.close();
+  }
+});
+
 after(async () => {
   await closeDatabase();
   sql.close();

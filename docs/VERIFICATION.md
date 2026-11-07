@@ -28,3 +28,12 @@ Noch nicht geprüft: tatsächliche E-Mail-Zustellung über den Nexene-SMTP-Anbie
 - Je 20 API-/Datenbanktests im lokalen Modus und mit ausdrücklich konfiguriertem libSQL-Treiber bestanden. Der externe Treiber wurde gegen isolierte lokale libSQL-Dateidatenbanken geprüft; ein echter Turso-Cloud-Endpunkt war dabei nicht verbunden.
 - TypeScript, Build mit `VERCEL=1` sowie Browser-/Tastatur- und die bestehenden 15 axe-Prüfzustände bestanden.
 - Tatsächlicher Vercel-/Turso-Betrieb und SMTP-Zustellung benötigen die Verbindung zum Benutzerkonto und zur Cloud-Datenbank. Es wurde keine bestehende Kundendatenbank automatisch übertragen; ein Neustart ohne echte Bestandsdaten wurde bestätigt.
+
+## v1.1, 7. November 2026
+
+- Je 23 API-/Datenbanktests mit lokalem SQLite und dem konfigurierten libSQL-Treiber bestanden. Neue Prüfungen decken die gewichtete Berechnung, gemeinsame Kunden-/Projektanlage mit Rollback, Kundenrechte und wiederholbare Migration vorhandener Daten ab.
+- TypeScript und Vercel-Produktionsbuild bestanden.
+- Bestehende Browser-, Tastatur- und Konfliktprüfungen bestanden. Zusätzlich: Kennzahlen ohne führende Null, Kundenanlage im Projektformular, Gewichtung mit 100-%-Validierung, Speicherung nach Neuladen, DE/EN und Aufgabenzuordnung zu Phasen.
+- axe meldet keine Verstöße gegen die ausgewählten WCAG-A/AA-Regeln in den bisherigen 15 Prüfzuständen und den beiden neuen Dialogzuständen.
+- Screenshots der neuen Dialoge visuell geprüft. Anwendungsquellen in `app/` und `lib/` enthalten keine Gedankenstriche. Bereits gespeicherte Kundeninhalte bleiben unverändert.
+- Die automatisierten Funktionstests verwenden isolierte Datenbanken. Der Produktions-Healthcheck nach Veröffentlichung prüft zusätzlich die Verbindung zur Turso-Datenbank.

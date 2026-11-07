@@ -26,6 +26,8 @@ export interface Project {
   name: string;
   description: string;
   phase: string;
+  phase_weights: Record<string, number>;
+  progress: number;
   start_date: string;
   due_date: string;
   budget?: number;
@@ -39,6 +41,7 @@ export interface Project {
   customer_color: string;
 }
 export interface Task {
+  phase: string;
   id: string;
   project_id: string;
   parent_id: string | null;

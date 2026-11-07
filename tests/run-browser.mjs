@@ -27,7 +27,11 @@ try {
     server.listen(port, "127.0.0.1", resolve);
   });
   await fetch(`${base}/api/health`);
-  for (const script of ["tests/browser.mjs", "tests/accessibility.mjs"]) {
+  for (const script of [
+    "tests/browser.mjs",
+    "tests/v11-browser.mjs",
+    "tests/accessibility.mjs",
+  ]) {
     const exit = await new Promise((resolve) => {
       const child = spawn(process.execPath, [script], {
         stdio: "inherit",

@@ -7,6 +7,8 @@ import {
   Plus,
 } from "lucide-react";
 
+import { useState } from "react";
+import { PhaseWeightsDialog } from "./phase-weights";
 import { Avatar, Badge } from "../ui/primitives";
 import { useWorkspace } from "../workspace-context";
 import { ApprovalsView } from "./approvals-view";
@@ -15,6 +17,7 @@ import { ResourcesView } from "./resources-view";
 import { TaskViews } from "./task-views";
 import { TimeView } from "./time-view";
 export function ProjectDetail() {
+  const [editingWeights, setEditingWeights] = useState(false);
   const {
     lang,
     data,
@@ -51,10 +54,10 @@ export function ProjectDetail() {
           <Avatar name={selected.initials} color={selected.customer_color} />
         )}
         <span>{selected.customer_name}</span>
-        <Badge status="progress">{selected.phase}</Badge>
+        <Badge status="progress">{t(`phase:${selected.phase}`)}</Badge>
         <span>
           <CalendarDays size={14} />
-          {fmt(selected.start_date)} — {fmt(selected.due_date)}
+          {fmt(selected.start_date)} {t("dateTo")} {fmt(selected.due_date)}
         </span>
         {admin && (
           <select
@@ -67,11 +70,32 @@ export function ProjectDetail() {
             }
           >
             {data.phases.map((p) => (
-              <option key={p}>{p}</option>
+              <option key={p} value={p}>
+                {t(`phase:${p}`)}
+              </option>
             ))}
           </select>
         )}
       </div>
+      <div className="project-progress-summary">
+        <span>
+          {t("projectProgress")}: <strong>{selected.progress}%</strong>
+        </span>
+        {admin && (
+          <button
+            className="text-button"
+            onClick={() => setEditingWeights(true)}
+          >
+            {t("editPhaseWeights")}
+          </button>
+        )}
+      </div>
+      {editingWeights && admin && (
+        <PhaseWeightsDialog
+          project={selected}
+          onClose={() => setEditingWeights(false)}
+        />
+      )}
       <div className="project-tabs">
         {[
           "tasks",

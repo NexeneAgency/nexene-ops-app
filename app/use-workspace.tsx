@@ -191,7 +191,7 @@ export function useWorkspaceController() {
           month: full ? "long" : "short",
           ...(full ? { year: "numeric" } : {}),
         })
-      : "—";
+      : t("noDate");
   const localeToggle = (
     <button
       className="language"
@@ -225,13 +225,8 @@ export function useWorkspaceController() {
   const doc = state.documents.find((d) => d.id === docId);
   const task = state.tasks.find((d) => d.id === taskId);
   const projectOf = (id: string) => state.projects.find((p) => p.id === id);
-  const taskProgress = (id: string) => {
-    const all = state.tasks.filter((t) => t.project_id === id);
-    return all.length
-      ? Math.round(
-          (all.filter((t) => t.status === "done").length / all.length) * 100,
-        )
-      : 0;
+  const projectProgress = (id: string) => {
+    return state.projects.find((p) => p.id === id)?.progress ?? 0;
   };
   const navItems: [View, LucideIcon][] = [
     ["overview", LayoutDashboard],
@@ -300,7 +295,7 @@ export function useWorkspaceController() {
     doc,
     task,
     projectOf,
-    taskProgress,
+    projectProgress,
     navItems,
   };
 }

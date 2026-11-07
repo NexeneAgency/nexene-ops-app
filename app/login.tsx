@@ -46,15 +46,11 @@ export function Login({
           <img src="/logo-white.svg" alt="Nexene" />
           <div className="art-lines" />
           <div className="login-manifesto">
-            <span>LESS FRICTION. MORE FLOW.</span>
-            <h1>
-              Good work.
-              <br />
-              Great things.
-            </h1>
-            <p>Nexene Operations Workspace</p>
+            <span>{t("greeting")}</span>
+            <h1>{t("portalHeadline")}</h1>
+            <p>{t("portalIntro")}</p>
           </div>
-          <span className="login-foot">DESIGNED TO MOVE THINGS FORWARD ↗</span>
+          <span className="login-foot">{t("security")}</span>
         </div>
         <div className="login-form">
           {localeToggle}

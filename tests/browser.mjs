@@ -116,7 +116,7 @@ try {
   await page.getByRole("button", { name: "Overview", exact: true }).click();
   await page
     .getByRole("heading", {
-      name: "A little clarity. A lot of progress.",
+      name: "Your project overview.",
       exact: true,
     })
     .waitFor();
