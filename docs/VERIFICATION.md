@@ -37,3 +37,11 @@ Noch nicht geprüft: tatsächliche E-Mail-Zustellung über den Nexene-SMTP-Anbie
 - axe meldet keine Verstöße gegen die ausgewählten WCAG-A/AA-Regeln in den bisherigen 15 Prüfzuständen und den beiden neuen Dialogzuständen.
 - Screenshots der neuen Dialoge visuell geprüft. Anwendungsquellen in `app/` und `lib/` enthalten keine Gedankenstriche. Bereits gespeicherte Kundeninhalte bleiben unverändert.
 - Die automatisierten Funktionstests verwenden isolierte Datenbanken. Der Produktions-Healthcheck nach Veröffentlichung prüft zusätzlich die Verbindung zur Turso-Datenbank.
+
+## v1.2, 7. November 2026
+
+- Dropdown-Pfeile und reservierter Textabstand visuell im Projektformular geprüft. Browsermessung bestätigt 16 px rechten Abstand und 48 px rechten Innenabstand der Auswahlfelder.
+- Zusätzliche Hover-Prüfung: 341 Interaktionen in 15 Ansichten und Zuständen, darunter aktive Navigation, Aufgabenansichten, Formulare, Editor und Kundenportal. Für alle geprüften Bedienelemente änderte sich der sichtbare Zustand beim Überfahren.
+- Deaktivierte Anmeldeschaltfläche bleibt beim Überfahren unverändert. Reduzierte Bewegung wird berücksichtigt.
+- Vollständige bestehende Browser-, Tastatur- und Barrierefreiheitsprüfungen bestanden. Die ausgewählten axe-Regeln melden keine Verstöße.
+- Vercel-Produktionsbuild bestanden. Keine Datenbankänderung erforderlich.

@@ -1,5 +1,13 @@
 # Änderungen
 
+## v1.2.0 · 7. November 2026
+
+- Dropdown-Pfeile haben einheitlich 16 px Abstand zum rechten Rand und ausreichend Platz zum Text. Native Auswahlmenüs bleiben erhalten.
+- Gemeinsame Hover-Rückmeldung für Schaltflächen, Links und aufklappbare Bereiche ergänzt, einschließlich aktiver Tabs, Sprachumschalter, Kalenderaufgaben und Unteraufgaben.
+- Auswahlfelder, Texteingaben und Checkboxen erhalten sichtbare Hover-Zustände. Tastaturfokus bleibt klar erkennbar; aufklappbare Bereiche erhalten einen eigenen Fokusrahmen.
+- Deaktivierte Schaltflächen erhalten keinen Hover-Effekt. Bewegungseinstellungen und Windows-Kontrastmodus werden berücksichtigt.
+- Tabellenzeilen ohne Aktion zeigen keinen Handcursor mehr.
+
 ## v1.1.0 · 7. November 2026
 
 - Kennzahlen in der Übersicht zeigen 0 und 1 ohne führende Null.

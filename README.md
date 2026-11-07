@@ -1,6 +1,6 @@
 # Nexene Ops
 
-Aktuelle Version: **v1.1.0**. Änderungen und Bedienung der Phasengewichtung: [CHANGELOG.md](CHANGELOG.md).
+Aktuelle Version: **v1.2.0**. Änderungen und Bedienung der Phasengewichtung: [CHANGELOG.md](CHANGELOG.md).
 
 **Hosting auf Vercel:** [Einrichtung mit Turso-Datenbank](docs/VERCEL.md). Kein Docker, VPS oder eigener Reverse Proxy nötig.
 
