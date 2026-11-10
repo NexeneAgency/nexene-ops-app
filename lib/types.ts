@@ -12,6 +12,9 @@ export interface User {
   name: string;
   role: "admin" | "customer";
   customer_id: string | null;
+  last_login_at?: string | null;
+  login_state?: "unknown" | "never" | "estimated" | "tracked";
+  revision?: number;
 }
 export interface Customer {
   id: string;
@@ -92,6 +95,7 @@ export interface Resource {
   visible: number;
 }
 export interface TimeEntry {
+  user_name?: string;
   id: string;
   project_id: string;
   user_id: string;

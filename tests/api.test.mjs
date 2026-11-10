@@ -390,17 +390,7 @@ test("session revocation takes effect immediately and scoped data stays inaccess
   assert.equal((await call(`users/${userB}`, "DELETE")).status, 200);
   assert.equal((await call("state", "GET", null, cookieB)).status, 401);
   assert.equal(await issueLogin("b@customer.test"), null);
-  assert.deepEqual(
-    (
-      await call(
-        "state",
-        "GET",
-        null,
-        `ops_session=${await createSession(userB)}`,
-      )
-    ).body.projects,
-    [],
-  );
+  await assert.rejects(createSession(userB), { status: 401 });
 });
 test("document revisions prevent one admin from overwriting another admin's changes", async () => {
   const second = (
@@ -1428,6 +1418,197 @@ test("v1.5 admin project deletion removes its entire graph and preserves custome
   );
   assert.deepEqual(sql.prepare("PRAGMA foreign_key_check").all(), []);
   assert.equal((await call(`projects/${id}`, "DELETE")).status, 404);
+});
+
+test("v1.6 records successful login, edits and deletes access while preserving history", async () => {
+  const id = (
+    await call("users", "POST", {
+      name: "Access test",
+      email: "access-test@customer.test",
+      customer_id: customerA,
+    })
+  ).body.id;
+  let user = (await call("state")).body.users.find((u) => u.id === id);
+  assert.equal(user.login_state, "never");
+  assert.equal(user.last_login_at, null);
+  const token = await issueLogin(user.email);
+  assert.equal(
+    (await call("state")).body.users.find((u) => u.id === id).last_login_at,
+    null,
+  );
+  const verified = await call("auth/verify", "POST", { token });
+  assert.equal(verified.status, 200);
+  const cookie = verified.response.headers.get("set-cookie").split(";")[0];
+  user = (await call("state")).body.users.find((u) => u.id === id);
+  assert.equal(user.login_state, "tracked");
+  assert.ok(user.last_login_at);
+  const timestamp = user.last_login_at;
+  await call("state", "GET", null, cookie);
+  assert.equal(
+    (await call("state")).body.users.find((u) => u.id === id).last_login_at,
+    timestamp,
+  );
+  assert.equal(
+    (
+      await call(`users/${id}`, "PATCH", {
+        name: "Renamed",
+        expected_revision: user.revision,
+      })
+    ).status,
+    200,
+  );
+  assert.equal(
+    (await call("state", "GET", null, cookie)).status,
+    200,
+    "name-only edits preserve sessions",
+  );
+  assert.equal(
+    (
+      await call(`users/${id}`, "PATCH", {
+        name: "Stale",
+        expected_revision: user.revision,
+      })
+    ).status,
+    409,
+  );
+  assert.equal(
+    (
+      await call(`users/${id}`, "PATCH", {
+        email: "changed@customer.test",
+        customer_id: customerB,
+      })
+    ).status,
+    200,
+  );
+  assert.equal((await call("state", "GET", null, cookie)).status, 401);
+  assert.equal(await issueLogin("access-test@customer.test"), null);
+  assert.equal(
+    (await call(`users/${id}`, "PATCH", { role: "admin" })).status,
+    200,
+  );
+  const assigned = (
+    await call("tasks", "POST", {
+      project_id: projectA,
+      title: "Assignment",
+      assignee_id: id,
+    })
+  ).body.id;
+  assert.equal((await call(`users/${id}`, "DELETE")).status, 200);
+  assert.equal(
+    (await call("state")).body.users.some((u) => u.id === id),
+    false,
+  );
+  assert.ok(
+    sql.prepare("SELECT deleted_at FROM users WHERE id=?").get(id).deleted_at,
+  );
+  assert.equal(
+    sql.prepare("SELECT assignee_id FROM tasks WHERE id=?").get(assigned)
+      .assignee_id,
+    null,
+  );
+  assert.equal(await issueLogin("changed@customer.test"), null);
+  const restored = await call("users", "POST", {
+    name: "Restored",
+    email: "changed@customer.test",
+    customer_id: customerA,
+  });
+  assert.equal(restored.status, 201);
+  assert.equal(restored.body.id, id);
+  assert.equal((await call(`users/${admin.id}`, "DELETE")).status, 403);
+  assert.equal(
+    (
+      await call(`users/${admin.id}`, "PATCH", {
+        role: "customer",
+        customer_id: customerA,
+      })
+    ).status,
+    403,
+  );
+  assert.equal(
+    (await call(`users/${id}`, "PATCH", { name: "Forbidden" }, cookieA)).status,
+    403,
+  );
+});
+
+test("v1.6 changed or deleted bootstrap accounts do not reappear on cold initialization", async () => {
+  const { database, initializeDatabase } = await import("../lib/database.mjs");
+  const storage = await database(),
+    previous = process.env.ADMIN_EMAILS;
+  try {
+    process.env.ADMIN_EMAILS = "bootstrap-test@nexene.test";
+    await initializeDatabase(storage);
+    const target = sql
+      .prepare("SELECT * FROM users WHERE email=?")
+      .get(process.env.ADMIN_EMAILS);
+    assert.equal(
+      (
+        await call(`users/${target.id}`, "PATCH", {
+          email: "bootstrap-changed@nexene.test",
+        })
+      ).status,
+      200,
+    );
+    await initializeDatabase(storage);
+    assert.equal(
+      sql
+        .prepare("SELECT id FROM users WHERE email=?")
+        .get("bootstrap-test@nexene.test"),
+      undefined,
+    );
+    assert.equal((await call(`users/${target.id}`, "DELETE")).status, 200);
+    await initializeDatabase(storage);
+    assert.equal(
+      (await call("state")).body.users.some((u) => u.id === target.id),
+      false,
+    );
+  } finally {
+    process.env.ADMIN_EMAILS = previous;
+  }
+});
+
+test("v1.6 concurrent admins cannot delete one another or remove the final admin", async () => {
+  const { createClient } = await import("@libsql/client");
+  const { SqlDatabase, initializeDatabase } =
+    await import("../lib/database.mjs");
+  const { manageUser } = await import("../lib/user-management.mjs");
+  const isolated = new SqlDatabase(
+    createClient({ url: "file:" + join(temp, "admin-guard.sqlite") }),
+  );
+  try {
+    await initializeDatabase(isolated);
+    const first = await isolated
+      .prepare("SELECT * FROM users WHERE role='admin'")
+      .get();
+    const second = await manageUser(isolated, first, null, "POST", {
+      name: "Other admin",
+      email: "guard@nexene.test",
+      role: "admin",
+    });
+    const results = await Promise.allSettled([
+      manageUser(isolated, first, second.id, "DELETE"),
+      manageUser(isolated, { id: second.id }, first.id, "DELETE"),
+    ]);
+    assert.equal(results.filter((r) => r.status === "fulfilled").length, 1);
+    assert.equal(
+      (
+        await isolated
+          .prepare(
+            "SELECT count(*) n FROM users WHERE role='admin' AND deleted_at IS NULL",
+          )
+          .get()
+      ).n,
+      1,
+    );
+    const remaining = await isolated
+      .prepare("SELECT * FROM users WHERE role='admin' AND deleted_at IS NULL")
+      .get();
+    await assert.rejects(
+      manageUser(isolated, remaining, remaining.id, "DELETE"),
+      { status: 403 },
+    );
+  } finally {
+    isolated.close();
+  }
 });
 
 after(async () => {

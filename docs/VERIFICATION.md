@@ -67,3 +67,11 @@ Noch nicht geprüft: tatsächliche E-Mail-Zustellung über den Nexene-SMTP-Anbie
 - Je 28 API-/Datenbanktests mit SQLite und dem konfigurierten libSQL-Treiber bestanden. Die Projektlöschung entfernt auch verschachtelte Aufgaben/Dokumente, Wiederholungen, Onboardings, PDF-Blöcke, Kommentare, Verknüpfungen, Freigaben und Zeiten. Andere Projekte und der Kunde bleiben erhalten; die Fremdschlüsselprüfung besteht.
 - Browserprüfung bestanden: Kunden erhalten keine Löschfunktion. Admins müssen den genauen Projektnamen eingeben; ein falscher Name lässt die Löschaktion deaktiviert. Nach dem Löschen erscheint die Projektübersicht, ein Kunde ohne weitere Projekte sieht den leeren Projektzustand.
 - Löschdialog mit axe ohne gemeldete Verstöße geprüft. Die bisherigen Browser-, Tastatur- und Konfliktprüfungen sowie Produktionsbuild und TypeScript bestehen.
+
+## v1.6, 10. November 2026
+
+- Je 31 API-/Datenbanktests mit SQLite und libSQL bestanden. Neue Prüfungen: Loginzeitpunkt nur bei erfolgreicher Anmeldung, „nie angemeldet“, Benutzeränderungen mit Revisionsprüfung, Sitzungs-/Tokenentzug, Löschung/Wiederfreischaltung und parallele Adminänderungen ohne Verlust des letzten Admins.
+- Geänderte und gelöschte Startkonten erscheinen nach erneuter Initialisierung nicht unter der alten Adresse wieder.
+- Browserprüfung bestanden: Login-Spalte, Drei-Punkte-Menü, Escape und Fokus-Rückgabe, Bearbeiten, bestätigte Löschung und Sperren eines bereits angemeldeten Kunden. Drei zusätzliche Zustände mit axe geprüft, ohne gemeldete Verstöße. Die bisherigen Prüfungen bestehen ebenfalls.
+- TypeScript und Produktionsbuild bestanden.
+- Schema 6 kennzeichnet historische Sitzungszeitpunkte als Schätzwerte. Fehlende historische Daten werden nicht als „nie angemeldet“ ausgegeben. Erfolgreiche neue Anmeldungen werden exakt erfasst.

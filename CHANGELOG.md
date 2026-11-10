@@ -1,5 +1,14 @@
 # Änderungen
 
+## v1.6.0 · 10. November 2026
+
+- „Team & Kundenzugänge“ zeigt das letzte erfolgreiche Login in Wiener Zeit. Neue Konten werden bis zur ersten Anmeldung als „Noch nie angemeldet“ gekennzeichnet. Historische Zeitpunkte aus vorhandenen Sitzungen sind als ungefähr markiert; andernfalls erscheint „Bisher nicht erfasst“.
+- Drei-Punkte-Menü pro Zeile mit „Bearbeiten“ und „Löschen“, einschließlich Tastaturbedienung, Escape und Fokus-Rückgabe. Das Menü wird nicht vom Tabellenrand abgeschnitten.
+- Name, E-Mail, Rolle und Kundenzuordnung bearbeiten. Änderungen des Zugriffsbereichs machen bestehende Sitzungen und Login-Links ungültig.
+- Löschen entfernt den Zugang aus der Übersicht und sperrt die Anmeldung. Aufgabenzuweisungen werden aufgehoben; historische Beiträge und Zeiteinträge bleiben mit ihrer Zuordnung erhalten. Die gleiche E-Mail kann später wieder freigeschaltet werden.
+- Der eigene Adminzugang kann nicht gelöscht oder herabgestuft werden. Gleichzeitige Adminänderungen dürfen keinen letzten Admin entfernen. Geänderte oder gelöschte Startkonten werden beim nächsten Start nicht automatisch neu angelegt.
+- Schema 6 ergänzt Loginzeitpunkt, Zugangsstatus, Revision und die einmalige Zuordnung konfigurierter Startkonten.
+
 ## v1.5.0 · 10. November 2026
 
 - Admins können Projekte in den Projektdetails dauerhaft löschen. Der vollständige Projektname muss vor dem Löschen bestätigt werden.

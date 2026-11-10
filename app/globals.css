@@ -3014,3 +3014,56 @@ main.portal-content {
 .modal-footer .primary.destructive:enabled:hover {
   background: #7d211e;
 }
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+.access-action-cell {
+  width: 64px;
+  text-align: right;
+}
+.access-last-login {
+  white-space: nowrap;
+}
+.login-history-note {
+  margin-top: 12px;
+}
+.user-actions-menu {
+  position: fixed;
+  z-index: 100;
+  width: 240px;
+  padding: 6px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 12px 40px #0c09101f;
+}
+.user-actions-menu > button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  text-align: left;
+  font-size: 14px;
+}
+.user-actions-menu small {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.delete-user-notice {
+  margin-top: 16px;
+  color: var(--muted);
+  font-size: 14px;
+}

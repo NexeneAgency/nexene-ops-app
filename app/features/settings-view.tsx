@@ -1,24 +1,31 @@
 "use client";
+import { useState } from "react";
 import { Plus, ShieldCheck } from "lucide-react";
-
+import type { User } from "../../lib/types";
 import { Avatar, Badge } from "../ui/primitives";
 import { useWorkspace } from "../workspace-context";
+import { UserActions } from "./user-actions";
+import { EditUser, DeleteUser } from "./user-dialogs";
 export function SettingsView() {
-  const {
-    lang,
-    data,
-    view,
-    project,
-    setModal,
-    email,
-    t,
-    admin,
-    notify,
-    mutate,
-    projects,
-    task,
-  } = useWorkspace();
-
+  const { lang, data, setModal, t } = useWorkspace();
+  const [editing, setEditing] = useState<User | null>(null),
+    [deleting, setDeleting] = useState<User | null>(null);
+  const lastLogin = (user: User) => {
+    if (user.login_state === "never") return t("neverLoggedIn");
+    if (!user.last_login_at) return t("loginNotRecorded");
+    const date = new Date(user.last_login_at).toLocaleString(
+      lang === "de" ? "de-AT" : "en-GB",
+      {
+        timeZone: "Europe/Vienna",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      },
+    );
+    return `${user.login_state === "estimated" ? t("approximately") + " " : ""}${date}`;
+  };
   return (
     <>
       <div className="section-heading">
@@ -32,56 +39,65 @@ export function SettingsView() {
         </button>
       </div>
       <div className="table-wrap">
-        <table>
+        <table className="access-table">
           <thead>
             <tr>
               <th>{t("name")}</th>
               <th>{t("email")}</th>
               <th>{t("role")}</th>
               <th>{t("customer")}</th>
-              <th />
+              <th>{t("lastLogin")}</th>
+              <th className="access-action-cell">
+                <span className="visually-hidden">{t("actions")}</span>
+              </th>
             </tr>
           </thead>
           <tbody>
-            {data.users.map((u) => (
-              <tr key={u.id}>
+            {data.users.map((user) => (
+              <tr key={user.id}>
                 <td>
                   <span className="person">
-                    <Avatar name={u.name} size="small" />
-                    {u.name}
+                    <Avatar name={user.name} />
+                    {user.name}
                   </span>
                 </td>
-                <td>{u.email}</td>
+                <td>{user.email}</td>
                 <td>
                   <Badge>
-                    {t(u.role === "admin" ? "admin" : "customerRole")}
+                    {t(user.role === "admin" ? "admin" : "customerRole")}
                   </Badge>
                 </td>
                 <td>
-                  {data.customers.find((c) => c.id === u.customer_id)?.name ||
-                    t("noCustomer")}
+                  {data.customers.find((c) => c.id === user.customer_id)
+                    ?.name || t("noCustomer")}
                 </td>
-                <td>
-                  {u.role === "customer" && u.customer_id && (
-                    <button
-                      className="text-button danger"
-                      onClick={async () => {
-                        if (window.confirm(t("revoke") + "?"))
-                          try {
-                            await mutate(`users/${u.id}`, "DELETE");
-                            notify(t("revoked"));
-                          } catch {}
-                      }}
-                    >
-                      {t("revoke")}
-                    </button>
-                  )}
+                <td
+                  className="access-last-login"
+                  title={
+                    user.login_state === "estimated"
+                      ? t("estimatedLoginHint")
+                      : undefined
+                  }
+                >
+                  {lastLogin(user)}
+                </td>
+                <td className="access-action-cell">
+                  <UserActions
+                    user={user}
+                    onEdit={setEditing}
+                    onDelete={setDeleting}
+                  />
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+      {data.users.some(
+        (u) => u.login_state === "unknown" || u.login_state === "estimated",
+      ) && (
+        <p className="form-note login-history-note">{t("loginHistoryNote")}</p>
+      )}
       <div className="info-box">
         <ShieldCheck size={19} />
         <div>
@@ -93,6 +109,20 @@ export function SettingsView() {
           </p>
         </div>
       </div>
+      {editing && (
+        <EditUser
+          key={editing.id}
+          user={editing}
+          onClose={() => setEditing(null)}
+        />
+      )}
+      {deleting && (
+        <DeleteUser
+          key={deleting.id}
+          user={deleting}
+          onClose={() => setDeleting(null)}
+        />
+      )}
     </>
   );
 }

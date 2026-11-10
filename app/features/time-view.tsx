@@ -44,7 +44,10 @@ export function TimeView() {
             {entries.map((e) => (
               <tr key={e.id}>
                 <td>{fmt(e.date)}</td>
-                <td>{data.users.find((u) => u.id === e.user_id)?.name}</td>
+                <td>
+                  {e.user_name ||
+                    data.users.find((u) => u.id === e.user_id)?.name}
+                </td>
                 <td>{e.note}</td>
                 <td>{(e.minutes / 60).toFixed(2)} h</td>
               </tr>

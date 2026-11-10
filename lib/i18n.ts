@@ -1,5 +1,25 @@
 export const words: Record<"de" | "en", Record<string, string>> = {
   de: {
+    lastLogin: "Letztes Login",
+    neverLoggedIn: "Noch nie angemeldet",
+    loginNotRecorded: "Bisher nicht erfasst",
+    approximately: "ca.",
+    estimatedLoginHint: "Aus einer vorhandenen Sitzung abgeleitet.",
+    loginHistoryNote:
+      "Frühere Anmeldungen wurden nicht vollständig erfasst. Ungefähre Angaben stammen aus vorhandenen Sitzungen. Neue Anmeldungen werden ab jetzt genau gespeichert. Zeiten: Wien.",
+    actions: "Aktionen",
+    actionsFor: "Aktionen für",
+    edit: "Bearbeiten",
+    delete: "Löschen",
+    editAccess: "Zugang bearbeiten",
+    deleteAccess: "Zugang löschen",
+    cannotDeleteSelf: "Dein eigener Zugang kann hier nicht gelöscht werden.",
+    keepLastAdmin: "Der letzte Admin muss erhalten bleiben.",
+    accessEditNotice:
+      "Änderungen an E-Mail, Rolle oder Kundenzuordnung beenden bestehende Anmeldungen. Dein eigener Zugang bleibt Admin.",
+    reloadAccess: "Änderungen verwerfen und aktuellen Stand laden",
+    deleteAccessNotice:
+      "Der Zugang wird sofort gesperrt und aus dieser Übersicht entfernt. Bestehende Anmeldungen und Anmeldelinks werden ungültig, Aufgabenzuweisungen aufgehoben. Projektinhalte und bisherige Beiträge bleiben erhalten.",
     projectManagement: "Projektverwaltung",
     deleteProject: "Projekt löschen",
     deleteProjectHint: "Das Projekt und seine Inhalte dauerhaft entfernen.",
@@ -233,6 +253,26 @@ export const words: Record<"de" | "en", Record<string, string>> = {
     retry: "Erneut versuchen",
   },
   en: {
+    lastLogin: "Last sign-in",
+    neverLoggedIn: "Never signed in",
+    loginNotRecorded: "Not recorded yet",
+    approximately: "Approx.",
+    estimatedLoginHint: "Derived from an existing session.",
+    loginHistoryNote:
+      "Earlier sign-ins were not fully recorded. Approximate dates come from existing sessions. New sign-ins are now recorded precisely. Times: Vienna.",
+    actions: "Actions",
+    actionsFor: "Actions for",
+    edit: "Edit",
+    delete: "Delete",
+    editAccess: "Edit access",
+    deleteAccess: "Delete access",
+    cannotDeleteSelf: "You cannot delete your own access here.",
+    keepLastAdmin: "The last admin must remain.",
+    accessEditNotice:
+      "Changes to email, role or customer assignment end existing sessions. Your own access stays admin.",
+    reloadAccess: "Discard changes and load latest version",
+    deleteAccessNotice:
+      "Access will be blocked immediately and removed from this list. Existing sessions and sign-in links will become invalid, and task assignments will be removed. Project content and past contributions will remain.",
     projectManagement: "Project management",
     deleteProject: "Delete project",
     deleteProjectHint: "Permanently remove this project and its contents.",
