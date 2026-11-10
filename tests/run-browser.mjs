@@ -30,6 +30,7 @@ try {
   for (const script of [
     "tests/browser.mjs",
     "tests/v11-browser.mjs",
+    "tests/v13-browser.mjs",
     "tests/accessibility.mjs",
   ]) {
     const exit = await new Promise((resolve) => {

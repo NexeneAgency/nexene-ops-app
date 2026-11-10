@@ -1,5 +1,14 @@
 # Änderungen
 
+## v1.3.0 · 10. November 2026
+
+- Eigenständiges Kundenportal: direkter Projekteinstieg ohne Admin-Seitenleiste, globale Suche, Breadcrumbs oder Zurück-Links. Kunden mit mehreren eigenen Projekten erhalten eine Auswahl innerhalb des Portals.
+- Projekttyp „SEO + GEO“ für laufende Betreuung ergänzt. Diese Projekte zeigen Reports statt eines Projektfortschritts und erhalten beim Anlegen keine Webdesign-Phasenaufgaben. Der Typ lässt sich in den Admin-Projektdetails ändern.
+- PDF-Reports mit Titel, Berichtsmonat und Beschreibung veröffentlichen, herunterladen und entfernen. Die Reports sind nach Veröffentlichung im jeweiligen Kundenportal sichtbar.
+- PDFs bis 3 MB liegen dauerhaft in der vorhandenen Datenbank, aufgeteilt in kleine Binärblöcke. Download und Löschung prüfen serverseitig Anmeldung, Kundenrechte und Adminrolle. Es gibt keine öffentlichen Dateilinks und keinen zusätzlichen Speicherdienst.
+- Schema 4 ergänzt Projekttyp und Reporttabellen. Bestehende Projekte bleiben zunächst Webdesign-Projekte; eine Typänderung erhält bestehende Aufgaben und Dokumente.
+- Kontrast der heutigen Datumsmarkierung im Kalender korrigiert.
+
 ## v1.2.0 · 7. November 2026
 
 - Dropdown-Pfeile haben einheitlich 16 px Abstand zum rechten Rand und ausreichend Platz zum Text. Native Auswahlmenüs bleiben erhalten.

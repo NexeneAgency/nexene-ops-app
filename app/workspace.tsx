@@ -1,5 +1,6 @@
 "use client";
 import { Check, Search, X } from "lucide-react";
+import { CustomerPortal } from "./features/customer-portal";
 import { CustomersView } from "./features/customers-view";
 import { Dashboard } from "./features/dashboard";
 import { DocumentsView } from "./features/documents-view";
@@ -64,57 +65,63 @@ function WorkspaceContent() {
       <a className="skip-link" href="#main-content">
         {lang === "de" ? "Zum Inhalt springen" : "Skip to content"}
       </a>
-      <Sidebar />
-      <div className="main-shell">
-        <Topbar />
-        <main id="main-content" tabIndex={-1}>
-          <PageHeading />
-          {view !== "overview" && view !== "settings" && (
-            <div className="search-row">
-              <label className="search">
-                <Search size={16} />
-                <input
-                  aria-label={t("search")}
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder={t("search")}
-                />
-                {query && (
-                  <button
-                    aria-label={
-                      lang === "de" ? "Suche löschen" : "Clear search"
-                    }
-                    onClick={() => setQuery("")}
-                  >
-                    <X size={13} />
-                  </button>
-                )}
-              </label>
-              {["tasks", "documents"].includes(view) && (
-                <select
-                  aria-label={t("project")}
-                  value={project}
-                  onChange={(e) => navigate(view, e.target.value)}
-                >
-                  <option value="">{t("all")}</option>
-                  {data.projects.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name}
-                    </option>
-                  ))}
-                </select>
+      {admin ? (
+        <>
+          <Sidebar />
+          <div className="main-shell">
+            <Topbar />
+            <main id="main-content" tabIndex={-1}>
+              <PageHeading />
+              {view !== "overview" && view !== "settings" && (
+                <div className="search-row">
+                  <label className="search">
+                    <Search size={16} />
+                    <input
+                      aria-label={t("search")}
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                      placeholder={t("search")}
+                    />
+                    {query && (
+                      <button
+                        aria-label={
+                          lang === "de" ? "Suche löschen" : "Clear search"
+                        }
+                        onClick={() => setQuery("")}
+                      >
+                        <X size={13} />
+                      </button>
+                    )}
+                  </label>
+                  {["tasks", "documents"].includes(view) && (
+                    <select
+                      aria-label={t("project")}
+                      value={project}
+                      onChange={(e) => navigate(view, e.target.value)}
+                    >
+                      <option value="">{t("all")}</option>
+                      {data.projects.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
               )}
-            </div>
-          )}
-          {view === "overview" && <Dashboard />}
-          {view === "projects" && !selected && <ProjectsView />}
-          {view === "projects" && selected && <ProjectDetail />}
-          {view === "tasks" && <TasksPage />}
-          {view === "documents" && <DocumentsView />}
-          {view === "customers" && admin && <CustomersView />}
-          {view === "settings" && admin && <SettingsView />}
-        </main>
-      </div>
+              {view === "overview" && <Dashboard />}
+              {view === "projects" && !selected && <ProjectsView />}
+              {view === "projects" && selected && <ProjectDetail />}
+              {view === "tasks" && <TasksPage />}
+              {view === "documents" && <DocumentsView />}
+              {view === "customers" && admin && <CustomersView />}
+              {view === "settings" && admin && <SettingsView />}
+            </main>
+          </div>
+        </>
+      ) : (
+        <CustomerPortal />
+      )}
       {toast && (
         <div
           className={`toast ${toastTone === "error" ? "error" : ""}`}

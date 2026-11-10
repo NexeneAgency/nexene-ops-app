@@ -39,6 +39,7 @@ export function FormModal({
       m.project_id || data.projects[0]?.id || "",
     ),
     [template, setTemplate] = useState(""),
+    [projectType, setProjectType] = useState("web"),
     [customer, setCustomer] = useState(data.customers[0]?.id || "__new__"),
     [weights, setWeights] = useState<Record<string, number>>({
       ...defaultPhaseWeights,
@@ -147,7 +148,7 @@ export function FormModal({
             }
             if (type === "project") {
               body.template = true;
-              body.phase_weights = weights;
+              if (projectType === "web") body.phase_weights = weights;
               if (customer === "__new__") {
                 delete body.customer_id;
                 body.new_customer = {
@@ -205,6 +206,18 @@ export function FormModal({
                 <p className="form-note">{t("inlineCustomerHelp")}</p>
               </fieldset>
             )}
+            <label>
+              {t("projectType")}
+              <select
+                aria-label={t("projectType")}
+                name="project_type"
+                value={projectType}
+                onChange={(e) => setProjectType(e.target.value)}
+              >
+                <option value="web">{t("webProject")}</option>
+                <option value="seo_geo">SEO + GEO</option>
+              </select>
+            </label>
             {field("name", "name", "text", true)}
             <label>
               {t("description")}
@@ -212,7 +225,7 @@ export function FormModal({
             </label>
             <div className="form-grid">
               {field("start_date", "start", "date", true, today())}
-              {field("due_date", "end", "date", true)}
+              {projectType === "web" && field("due_date", "end", "date", true)}
             </div>
             <label>
               {t("pricing")}
@@ -225,14 +238,16 @@ export function FormModal({
               {field("budget", "budget", "number", false, 0)}
               {field("hours_budget", "hours", "number", false, 0)}
             </div>
-            <details className="phase-weight-details">
-              <summary>{t("editPhaseWeights")}</summary>
-              <PhaseWeightFields
-                weights={weights}
-                onChange={setWeights}
-                t={t}
-              />
-            </details>
+            {projectType === "web" && (
+              <details className="phase-weight-details">
+                <summary>{t("editPhaseWeights")}</summary>
+                <PhaseWeightFields
+                  weights={weights}
+                  onChange={setWeights}
+                  t={t}
+                />
+              </details>
+            )}
           </>
         )}
         {type === "task" && (
@@ -430,6 +445,7 @@ export function FormModal({
             disabled={
               busy ||
               (type === "project" &&
+                projectType === "web" &&
                 Object.values(weights).reduce(
                   (sum, weight) => sum + weight,
                   0,

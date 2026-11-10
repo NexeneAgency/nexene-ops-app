@@ -912,6 +912,7 @@ test("v1.1 migrates existing project phases without changing tasks or documents"
       .prepare("SELECT * FROM projects WHERE id='legacy-p'")
       .get();
     assert.equal(project.name, "Legacy project");
+    assert.equal(project.project_type, "web");
     assert.deepEqual(JSON.parse(project.phase_weights), defaultPhaseWeights);
     assert.equal(
       (await legacy.prepare("SELECT * FROM tasks WHERE id='legacy-t'").get())
@@ -939,6 +940,154 @@ test("v1.1 migrates existing project phases without changing tasks or documents"
   } finally {
     legacy.close();
   }
+});
+
+test("v1.3 recurring SEO projects have no progress or web template tasks", async () => {
+  const result = await call("projects", "POST", {
+    customer_id: customerA,
+    name: "SEO + GEO",
+    project_type: "seo_geo",
+  });
+  assert.equal(result.status, 201);
+  const project = (await call("state")).body.projects.find(
+    (p) => p.id === result.body.id,
+  );
+  assert.equal(project.project_type, "seo_geo");
+  assert.equal(project.progress, null);
+  assert.equal(
+    sql
+      .prepare("SELECT count(*) n FROM tasks WHERE project_id=?")
+      .get(project.id).n,
+    0,
+  );
+  assert.equal(
+    (await call(`projects/${project.id}`, "PATCH", { project_type: "unknown" }))
+      .status,
+    400,
+  );
+  assert.equal(
+    (await call(`projects/${project.id}`, "PATCH", { project_type: "web" }))
+      .status,
+    200,
+  );
+  assert.equal(
+    (await call("state")).body.projects.find((p) => p.id === project.id)
+      .progress,
+    0,
+  );
+});
+
+test("v1.3 PDFs persist in chunks and remain isolated, private and admin-managed", async () => {
+  const seo = (
+    await call("projects", "POST", {
+      customer_id: customerA,
+      name: "SEO report project",
+      project_type: "seo_geo",
+    })
+  ).body.id;
+  const contact = (
+    await call("users", "POST", {
+      name: "Report contact",
+      email: "reports@customer.test",
+      customer_id: customerA,
+    })
+  ).body.id;
+  const other = (
+    await call("users", "POST", {
+      name: "Other report contact",
+      email: "other-reports@customer.test",
+      customer_id: customerB,
+    })
+  ).body.id;
+  const ownCookie = `ops_session=${await createSession(contact)}`,
+    otherCookie = `ops_session=${await createSession(other)}`;
+  const pdf = Buffer.concat([
+    Buffer.from("%PDF-1.7\n"),
+    Buffer.alloc(800000, 32),
+    Buffer.from("\n%%EOF\n"),
+  ]);
+  async function upload({
+    cookie = adminCookie,
+    bytes = pdf,
+    filename = "report.pdf",
+    period = "2026-11",
+    project_id = seo,
+  } = {}) {
+    const form = new FormData();
+    form.set("project_id", project_id);
+    form.set("title", "Monthly report");
+    form.set("period", period);
+    form.set("file", new File([bytes], filename, { type: "application/pdf" }));
+    return handle(
+      new Request("http://localhost:3000/api/reports", {
+        method: "POST",
+        headers: { origin: "http://localhost:3000", cookie },
+        body: form,
+      }),
+    );
+  }
+  assert.equal((await upload({ cookie: ownCookie })).status, 403);
+  assert.equal(
+    (await upload({ bytes: Buffer.from("<html>Not PDF</html>") })).status,
+    400,
+  );
+  assert.equal((await upload({ filename: "report.html" })).status, 400);
+  assert.equal((await upload({ period: "2026-13" })).status, 400);
+  assert.equal((await upload({ project_id: projectA })).status, 400);
+  assert.equal(
+    (await upload({ bytes: Buffer.alloc(3 * 1024 * 1024 + 1) })).status,
+    413,
+  );
+  const response = await upload();
+  assert.equal(response.status, 201);
+  const { id } = await response.json();
+  assert.equal(
+    sql
+      .prepare("SELECT count(*) n FROM report_chunks WHERE report_id=?")
+      .get(id).n,
+    4,
+  );
+  const own = (await call("state", "GET", null, ownCookie)).body;
+  assert.equal(own.reports.length, 1);
+  assert.equal(own.reports[0].id, id);
+  assert.equal(Object.hasOwn(own.reports[0], "content"), false);
+  assert.equal(
+    (await call("state", "GET", null, otherCookie)).body.reports.length,
+    0,
+  );
+  const get = (cookie) =>
+    handle(
+      new Request(`http://localhost:3000/api/reports/${id}/download`, {
+        headers: { cookie },
+      }),
+    );
+  assert.equal((await get("")).status, 401);
+  assert.equal((await get(otherCookie)).status, 404);
+  await closeDatabase();
+  const download = await get(ownCookie);
+  assert.equal(download.status, 200);
+  assert.equal(download.headers.get("content-type"), "application/pdf");
+  assert.equal(download.headers.get("cache-control"), "private, no-store");
+  assert.match(download.headers.get("content-disposition"), /^attachment;/);
+  assert.deepEqual(Buffer.from(await download.arrayBuffer()), pdf);
+  assert.equal(
+    (await call(`reports/${id}`, "DELETE", null, ownCookie)).status,
+    403,
+  );
+  assert.equal((await call(`users/${contact}`, "DELETE")).status, 200);
+  assert.equal(
+    (await get(ownCookie)).status,
+    401,
+    "revoking a contact revokes PDF access",
+  );
+  assert.equal((await call(`reports/${id}`, "DELETE")).status, 200);
+  assert.equal(
+    sql
+      .prepare("SELECT count(*) n FROM report_chunks WHERE report_id=?")
+      .get(id).n,
+    0,
+  );
+  assert.equal((await get(adminCookie)).status, 404);
 });
 
 after(async () => {

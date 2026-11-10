@@ -3,7 +3,7 @@ export type Locale = "de" | "en";
 export type View =
   "overview" | "projects" | "tasks" | "documents" | "customers" | "settings";
 export type ProjectTab =
-  "tasks" | "documents" | "approvals" | "resources" | "time";
+  "tasks" | "documents" | "approvals" | "resources" | "time" | "reports";
 export type TaskMode = "list" | "board" | "calendar" | "timeline";
 export type TaskStatus = "todo" | "progress" | "review" | "done";
 export interface User {
@@ -27,7 +27,8 @@ export interface Project {
   description: string;
   phase: string;
   phase_weights: Record<string, number>;
-  progress: number;
+  progress: number | null;
+  project_type: "web" | "seo_geo";
   start_date: string;
   due_date: string;
   budget?: number;
@@ -110,7 +111,18 @@ export interface Approval {
   feedback: string;
   created_at: string;
 }
+export interface Report {
+  id: string;
+  project_id: string;
+  title: string;
+  period: string;
+  description: string;
+  file_name: string;
+  size: number;
+  created_at: string;
+}
 export interface WorkspaceState {
+  reports: Report[];
   user: User;
   phases: string[];
   projects: Project[];

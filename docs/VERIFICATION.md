@@ -45,3 +45,11 @@ Noch nicht geprüft: tatsächliche E-Mail-Zustellung über den Nexene-SMTP-Anbie
 - Deaktivierte Anmeldeschaltfläche bleibt beim Überfahren unverändert. Reduzierte Bewegung wird berücksichtigt.
 - Vollständige bestehende Browser-, Tastatur- und Barrierefreiheitsprüfungen bestanden. Die ausgewählten axe-Regeln melden keine Verstöße.
 - Vercel-Produktionsbuild bestanden. Keine Datenbankänderung erforderlich.
+
+## v1.3, 10. November 2026
+
+- Je 25 API-/Datenbanktests mit SQLite und dem konfigurierten libSQL-Treiber bestanden. Neue Prüfungen: SEO-Projekttyp ohne Phasenaufgaben oder Prozentwert, PDF-Upload und Wiederherstellung nach Verbindungswechsel, Größen-/Formatprüfung, Downloadrechte, fremde Kunden, entzogene Zugänge und vollständige Löschung der Binärblöcke.
+- Browserprüfung bestanden: eigenständiges Kundenportal ohne Sidebar, Breadcrumbs, globale Suche und Zurück-Link; SEO-Reports als Startansicht, Upload durch Admin, bytegleicher Download durch Kunden, Neuladen, Dokument-Direktlinks und DE/EN.
+- Die bisherigen Tastatur-/Konfliktprüfungen und alle ausgewählten axe-Regeln bestehen. Das SEO-Kundenportal wurde zusätzlich in zwei Breiten geprüft; keine gemeldeten Verstöße.
+- Produktionsbuild und TypeScript bestanden. Portal-Screenshot visuell geprüft.
+- Schema 4 ist additiv. PDF-Dateien liegen in der vorhandenen Datenbank, höchstens 3 MB pro Datei. Es wurde kein zusätzlicher Cloud-Dienst eingerichtet.

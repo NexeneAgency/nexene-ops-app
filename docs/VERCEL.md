@@ -2,7 +2,7 @@
 
 Vercel ist der vorgesehene Hosting-Weg. Ein Docker-Container, VPS-Zugang, Portfreigaben und ein eigener Reverse Proxy sind dafür nicht erforderlich.
 
-Die Next.js-Anwendung läuft auf Node.js 24. Daten werden in einer externen, SQLite-kompatiblen Turso/libSQL-Datenbank gespeichert. Eine lokale SQLite-Datei ist auf Vercel ausdrücklich gesperrt: Serverless-Dateisysteme sind kein dauerhafter, gemeinsam genutzter Speicher. Dokumente, Kunden, Aufgaben, Freigaben, Login-Links und Sitzungen werden zentral in Turso gespeichert. Externe Dateien bleiben Links; ein zusätzlicher Blob-Speicher wird für den aktuellen Umfang nicht benötigt.
+Die Next.js-Anwendung läuft auf Node.js 24. Daten werden in einer externen, SQLite-kompatiblen Turso/libSQL-Datenbank gespeichert. Eine lokale SQLite-Datei ist auf Vercel ausdrücklich gesperrt: Serverless-Dateisysteme sind kein dauerhafter, gemeinsam genutzter Speicher. Dokumente, Kunden, Aufgaben, Freigaben, Login-Links und Sitzungen werden zentral in Turso gespeichert. PDF-Reports bis 3 MB werden ebenfalls dauerhaft in Turso gespeichert, in kleinen Binärblöcken mit separaten Metadaten. Andere Dateien bleiben Links; ein zusätzlicher Blob-Speicher wird für den aktuellen Umfang nicht benötigt.
 
 ## 1. Projekt importieren
 

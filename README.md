@@ -1,6 +1,6 @@
 # Nexene Ops
 
-Aktuelle Version: **v1.2.0**. Änderungen und Bedienung der Phasengewichtung: [CHANGELOG.md](CHANGELOG.md).
+Aktuelle Version: **v1.3.0**. Änderungen und Bedienung der Phasengewichtung: [CHANGELOG.md](CHANGELOG.md).
 
 **Hosting auf Vercel:** [Einrichtung mit Turso-Datenbank](docs/VERCEL.md). Kein Docker, VPS oder eigener Reverse Proxy nötig.
 
@@ -30,6 +30,7 @@ http://localhost:3000 öffnen. Freigeschaltete Admin-Adresse eingeben; bei `DEV_
 - Aufgabenliste, verschiebbares Kanban, Monatskalender und einfacher Zeitplan.
 - Zuweisungen an Admins, Prioritäten, interne/kundensichtbare Kommentare, wöchentliche/monatliche Folgeaufgaben bei Abschluss.
 - Verschachtelte Dokumente mit Markdown-Kürzeln, Formatierungsleiste, internen Links und Dokumentvorlagen. Explizites Speichern schützt vor überraschender Veröffentlichung während des Schreibens.
+- Eigenständiges Kundenportal ohne Admin-Navigation. SEO-/GEO-Projekte mit privaten PDF-Reports bis 3 MB statt Projektfortschritt.
 - Ressourcenlinks, manuelle Zeiteinträge, Festpreis-/Stundenbudget. Zeiten und Budgets sind ausschließlich intern.
 - Kunden können sichtbare Inhalte ansehen, kommentieren und angeforderte Freigaben mit Feedback entscheiden. Entscheidungen sind mit Kontakt und Zeit gespeichert.
 - Deutsch/Englisch umschalten; redaktionelle Inhalte und Projektphasennamen bleiben in ihrer eingegebenen Sprache.

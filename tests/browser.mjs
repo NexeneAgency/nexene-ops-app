@@ -161,16 +161,10 @@ try {
   });
   customerPage.on("pageerror", (e) => errors.push(e.message));
   await customerPage.goto(`${base}/?token=${customerToken}`);
-  await customerPage
-    .getByRole("heading", { name: "Alles im Blick.", exact: true })
-    .waitFor();
-  assert.equal(
-    await customerPage
-      .getByRole("button", { name: "Einstellungen", exact: true })
-      .count(),
-    0,
-  );
-  await customerPage.locator(".project-card").first().click();
+  await customerPage.locator(".portal-project-heading h1").waitFor();
+  assert.equal(await customerPage.locator(".sidebar").count(), 0);
+  assert.equal(await customerPage.locator(".back-button").count(), 0);
+  assert.equal(await customerPage.locator(".search-row").count(), 0);
   await customerPage
     .locator(".project-tabs")
     .getByRole("button", { name: "Offene Freigaben", exact: true })

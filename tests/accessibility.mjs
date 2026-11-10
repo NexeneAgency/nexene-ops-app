@@ -195,12 +195,14 @@ try {
     }),
     customerPage = await customerContext.newPage();
   await customerPage.goto(`${base}/?token=${loginToken(contact.id)}`);
-  await customerPage
-    .getByRole("heading", { name: "Alles im Blick.", exact: true })
-    .waitFor();
-  await scan("customer dashboard", customerPage);
-  await customerPage.locator(".project-card").first().click();
+  await customerPage.locator(".portal-project-heading h1").waitFor();
+  assert.equal(
+    await customerPage.locator(".sidebar,.back-button,.search-row").count(),
+    0,
+  );
   await scan("customer project", customerPage);
+  await customerPage.setViewportSize({ width: 800, height: 1000 });
+  await scan("narrow customer project", customerPage);
   await customerContext.close();
   if (failures.length) console.error(JSON.stringify(failures, null, 2));
   assert.deepEqual(failures, [], "WCAG automated checks must pass");

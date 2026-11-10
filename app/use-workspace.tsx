@@ -33,6 +33,7 @@ const empty: WorkspaceState = {
   resources: [],
   time_entries: [],
   approvals: [],
+  reports: [],
   customers: [],
   users: [],
 };
@@ -80,6 +81,14 @@ export function useWorkspaceController() {
     try {
       const d = await api<WorkspaceState>("state");
       setData(d);
+      if (d.user.role === "customer") {
+        setProject((current) =>
+          d.projects.some((p) => p.id === current)
+            ? current
+            : d.projects[0]?.id || "",
+        );
+        setView("projects");
+      }
       setFatal("");
       return d;
     } catch (e) {
@@ -111,7 +120,10 @@ export function useWorkspaceController() {
       if (id && d) {
         if (d.documents.some((doc) => doc.id === id)) {
           setDocId(id);
-          setView("documents");
+          if (d.user.role === "customer") {
+            setProject(d.documents.find((doc) => doc.id === id)!.project_id);
+            setTab("documents");
+          } else setView("documents");
         } else notify(words[saved === "en" ? "en" : "de"].unavailable);
       }
     })();
@@ -214,6 +226,18 @@ export function useWorkspaceController() {
         .includes(query.toLowerCase()),
   );
   const selected = state.projects.find((p) => p.id === project);
+  useEffect(() => {
+    setTab(
+      docId &&
+        data?.documents.some(
+          (d) => d.id === docId && d.project_id === selected?.id,
+        )
+        ? "documents"
+        : selected?.project_type === "seo_geo"
+          ? "reports"
+          : "tasks",
+    );
+  }, [selected?.id, selected?.project_type]);
   const matches = (text: string) =>
     !query || text.toLowerCase().includes(query.toLowerCase());
   const tasks = state.tasks.filter(

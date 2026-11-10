@@ -38,14 +38,25 @@ export function ProjectCard({ p }: { p: Project }) {
       </div>
       <span className="customer-label">{p.customer_name}</span>
       <h3>{p.name}</h3>
-      <Badge status="progress">{t(`phase:${p.phase}`)}</Badge>
-      <div className="progress-label">
-        <span>{lang === "de" ? "Fortschritt" : "Progress"}</span>
-        <strong>{progress}%</strong>
-      </div>
-      <div className="progress-bar">
-        <span style={{ width: `${progress}%` }} />
-      </div>
+      <Badge status="progress">
+        {p.project_type === "seo_geo" ? "SEO + GEO" : t(`phase:${p.phase}`)}
+      </Badge>
+      {p.project_type !== "seo_geo" ? (
+        <>
+          <div className="progress-label">
+            <span>{lang === "de" ? "Fortschritt" : "Progress"}</span>
+            <strong>{progress}%</strong>
+          </div>
+          <div className="progress-bar">
+            <span style={{ width: `${progress}%` }} />
+          </div>
+        </>
+      ) : (
+        <p className="project-report-count">
+          {data.reports.filter((r) => r.project_id === p.id).length}{" "}
+          {t("reports")}
+        </p>
+      )}
       <div className="card-bottom">
         <span>
           <CheckSquare size={13} />
@@ -53,7 +64,7 @@ export function ProjectCard({ p }: { p: Project }) {
         </span>
         <span>
           <CalendarDays size={13} />
-          {fmt(p.due_date)}
+          {p.project_type === "seo_geo" ? t("ongoing") : fmt(p.due_date)}
         </span>
       </div>
     </button>
