@@ -121,7 +121,24 @@ export interface Report {
   size: number;
   created_at: string;
 }
+export interface OnboardingAnswers {
+  [key: string]:
+    string | boolean | Record<string, { status: string; note: string }>;
+  accesses: Record<string, { status: string; note: string }>;
+}
+export interface Onboarding {
+  project_id: string;
+  status: "draft" | "completed";
+  answers: OnboardingAnswers;
+  step: number;
+  revision: number;
+  document_id: string | null;
+  completed_at: string | null;
+  updated_at: string;
+}
 export interface WorkspaceState {
+  onboarding_email: string;
+  onboardings: Onboarding[];
   reports: Report[];
   user: User;
   phases: string[];
@@ -161,4 +178,7 @@ export interface MutationResult {
   id?: string;
   ok?: boolean;
   message?: string;
+  revision?: number;
+  document_id?: string;
+  completed?: boolean;
 }

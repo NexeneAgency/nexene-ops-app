@@ -89,7 +89,7 @@ export function Dashboard() {
       <div className="workspace-footer">
         <span className="footer-mark">N</span>
         <span>{t("workspace")}</span>
-        <span>NEXENE OPS · V1.3</span>
+        <span>NEXENE OPS · V1.4</span>
       </div>
     </>
   );

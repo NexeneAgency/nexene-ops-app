@@ -1,5 +1,13 @@
 # Änderungen
 
+## v1.4.0 · 10. November 2026
+
+- Kunden-Onboarding mit fünf Schritten für Webdesign und SEO + GEO ergänzt. Lokale Unternehmen erhalten eine zusätzliche Abfrage zum Google-Unternehmensprofil.
+- Zentrale Einladungsadresse über `ONBOARDING_EMAIL`, Rechtehinweise und Status pro System. Das Formular erfasst Informationen und meldet Einladungen; Nexene prüft die Zugriffe anschließend.
+- Zwischenstände speichern, später fortsetzen, Angaben prüfen und ein gemeinsames Projektdokument erzeugen. Nach dem Abschluss öffnet „Onboarding abgeschlossen“ dieses Dokument.
+- Revisionsprüfung verhindert Überschreiben durch andere Ansprechpartner. Abschluss und Dokument werden gemeinsam gespeichert; wiederholtes Abschließen bleibt ohne Duplikate.
+- Schema 5 ergänzt gespeicherte Onboardings. Lokale Schreibtransaktionen werden pro Verbindung geordnet ausgeführt.
+
 ## v1.3.0 · 10. November 2026
 
 - Eigenständiges Kundenportal: direkter Projekteinstieg ohne Admin-Seitenleiste, globale Suche, Breadcrumbs oder Zurück-Links. Kunden mit mehreren eigenen Projekten erhalten eine Auswahl innerhalb des Portals.

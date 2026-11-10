@@ -31,6 +31,7 @@ try {
     "tests/browser.mjs",
     "tests/v11-browser.mjs",
     "tests/v13-browser.mjs",
+    "tests/v14-browser.mjs",
     "tests/accessibility.mjs",
   ]) {
     const exit = await new Promise((resolve) => {

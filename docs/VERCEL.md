@@ -35,17 +35,18 @@ Die Tabellen und die vorhandene Dokumentrevision-Migration werden beim ersten Da
 
 Unter **Project → Settings → Environment Variables** für **Production** eintragen:
 
-| Name           | Wert                                                                   |
-| -------------- | ---------------------------------------------------------------------- |
-| `ADMIN_EMAILS` | Eure drei zugelassenen Adressen, mit Komma getrennt                    |
-| `SMTP_HOST`    | SMTP-Server                                                            |
-| `SMTP_PORT`    | `587` für STARTTLS oder `465` für direktes TLS                         |
-| `SMTP_SECURE`  | `false` bei 587, `true` bei 465                                        |
-| `SMTP_USER`    | SMTP-Benutzername                                                      |
-| `SMTP_PASS`    | SMTP-Passwort                                                          |
-| `MAIL_FROM`    | Beim Anbieter erlaubter Absender, z. B. `Nexene Ops <ops@example.com>` |
-| `DEV_MAIL_LOG` | `false`                                                                |
-| `SEED_DEMO`    | `false`                                                                |
+| Name               | Wert                                                                   |
+| ------------------ | ---------------------------------------------------------------------- |
+| `ADMIN_EMAILS`     | Eure drei zugelassenen Adressen, mit Komma getrennt                    |
+| `ONBOARDING_EMAIL` | Zentrales Konto für Kundeneinladungen; ohne Wert erste Admin-Adresse   |
+| `SMTP_HOST`        | SMTP-Server                                                            |
+| `SMTP_PORT`        | `587` für STARTTLS oder `465` für direktes TLS                         |
+| `SMTP_SECURE`      | `false` bei 587, `true` bei 465                                        |
+| `SMTP_USER`        | SMTP-Benutzername                                                      |
+| `SMTP_PASS`        | SMTP-Passwort                                                          |
+| `MAIL_FROM`        | Beim Anbieter erlaubter Absender, z. B. `Nexene Ops <ops@example.com>` |
+| `DEV_MAIL_LOG`     | `false`                                                                |
+| `SEED_DEMO`        | `false`                                                                |
 
 `APP_URL` ist optional, solange die automatisch bereitgestellte Vercel-Adresse genutzt wird. Ohne expliziten Wert verwendet die App Vercels vertrauenswürdige Deployment-Variablen für Login-Links und die Ursprungsprüfung. Bei einer eigenen Domain `APP_URL=https://ops.eure-domain.at` setzen und genau diese Adresse verwenden. Kein Unterpfad und keine Zugangsdaten in dieser URL.
 

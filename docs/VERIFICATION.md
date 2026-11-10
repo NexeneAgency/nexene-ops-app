@@ -53,3 +53,11 @@ Noch nicht geprüft: tatsächliche E-Mail-Zustellung über den Nexene-SMTP-Anbie
 - Die bisherigen Tastatur-/Konfliktprüfungen und alle ausgewählten axe-Regeln bestehen. Das SEO-Kundenportal wurde zusätzlich in zwei Breiten geprüft; keine gemeldeten Verstöße.
 - Produktionsbuild und TypeScript bestanden. Portal-Screenshot visuell geprüft.
 - Schema 4 ist additiv. PDF-Dateien liegen in der vorhandenen Datenbank, höchstens 3 MB pro Datei. Es wurde kein zusätzlicher Cloud-Dienst eingerichtet.
+
+## v1.4, 10. November 2026
+
+- Je 27 API-/Datenbanktests mit SQLite und dem konfigurierten libSQL-Treiber bestanden. Neue Prüfungen: geschützte Onboarding-Entwürfe, Konflikte paralleler Änderungen, Pflichtfelder, bedingte Zugriffe und genau ein sichtbares Dokument auch bei gleichzeitigem oder wiederholtem Abschluss.
+- Browserablauf mit Kundenkonto bestanden: fünf Schritte, speichern/schließen, nach Neuladen fortsetzen, lokales Unternehmensprofil, Bestätigung, Abschlussdokument, erneutes Öffnen und DE/EN.
+- Zusätzlich drei Formularzustände mit axe geprüft, ohne gemeldete Verstöße. Die bisherigen Browser-, Tastatur-, Konflikt- und Portalprüfungen bestehen ebenfalls.
+- TypeScript und Vercel-Produktionsbuild bestanden. Zugriffsformular visuell geprüft.
+- Schema 5 ergänzt Onboarding-Daten, ohne bestehende Inhalte zu ändern. Die Einladungsadresse wird über `ONBOARDING_EMAIL` gepflegt. Angaben werden gespeichert; Einladungen und Prüfung erfolgen in den jeweiligen Systemen durch Kunde und Nexene.

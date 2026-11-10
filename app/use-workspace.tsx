@@ -34,6 +34,8 @@ const empty: WorkspaceState = {
   time_entries: [],
   approvals: [],
   reports: [],
+  onboardings: [],
+  onboarding_email: "",
   customers: [],
   users: [],
 };

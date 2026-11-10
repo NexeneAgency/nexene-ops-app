@@ -15,6 +15,7 @@ import { ApprovalsView } from "./approvals-view";
 import { DocumentsView } from "./documents-view";
 import { ResourcesView } from "./resources-view";
 import { TaskViews } from "./task-views";
+import { OnboardingPanel } from "./onboarding";
 import { ReportsView } from "./reports-view";
 import { TimeView } from "./time-view";
 export function ProjectDetail() {
@@ -121,6 +122,7 @@ export function ProjectDetail() {
           onClose={() => setEditingWeights(false)}
         />
       )}
+      <OnboardingPanel />
       <div className="project-tabs">
         {[
           ...(seo ? ["reports"] : []),

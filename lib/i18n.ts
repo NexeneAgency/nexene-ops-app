@@ -1,5 +1,48 @@
 export const words: Record<"de" | "en", Record<string, string>> = {
   de: {
+    copyEmail: "Adresse kopieren",
+    emailCopied: "Kopiert",
+    copyEmailManually: "Bitte kopiere die Einladungsadresse manuell.",
+    onboarding: "Kunden-Onboarding",
+    onboardingHeading: "Damit wir mit deinem Projekt starten können",
+    onboardingIntro:
+      "Teile uns die wichtigsten Informationen mit und lade Nexene zu den benötigten Systemen ein.",
+    onboardingStart: "Onboarding starten",
+    onboardingResume: "Onboarding fortsetzen",
+    onboardingDone: "Onboarding abgeschlossen",
+    onboardingSubmitted: "Angaben übermittelt am",
+    onboardingContact: "Kontakt",
+    onboardingGoals: "Projektziele",
+    onboardingAccess: "Zugriffe",
+    onboardingAssets: "Materialien",
+    onboardingReview: "Prüfen",
+    onboardingSteps: "Onboarding-Schritte",
+    step: "Schritt",
+    of: "von",
+    next: "Weiter",
+    saveAndClose: "Speichern und schließen",
+    newWebsite:
+      "Wir erstellen eine neue Website und haben noch keine Website-Adresse",
+    localBusiness: "Wir haben einen lokalen Standort oder ein Einzugsgebiet",
+    invitationAddress: "Nexene zu dieser Adresse einladen",
+    invitationPending: "Die Einladungsadresse wird noch eingerichtet.",
+    accessSafety:
+      "Bitte Einladungen mit den beschriebenen Rechten versenden. Keine Passwörter, API-Schlüssel oder Wiederherstellungscodes in dieses Formular eintragen.",
+    accessStatus: "Zugriffsstatus",
+    chooseStatus: "Status auswählen",
+    accessNote: "Hinweis zum Zugang (optional)",
+    assetsHelp:
+      "Verlinke vorhandene Ordner oder Dokumente. Bitte prüfe, ob Nexene die Inhalte öffnen kann. Fehlende Materialien kannst du im Hinweisfeld nennen.",
+    checkAnswers: "Bitte prüfe deine Angaben",
+    onboardingVerificationNote:
+      "Mit dem Abschluss werden deine Angaben als Dokument gespeichert. Nexene prüft die gemeldeten Zugriffe anschließend.",
+    confirmOnboarding:
+      "Ich habe die Angaben geprüft und keine Passwörter oder geheimen Schlüssel eingetragen.",
+    submitOnboarding: "Onboarding abschließen",
+    notProvided: "Nicht angegeben",
+    onboardingReload: "Entwurf verwerfen und aktuellen Stand laden",
+    onboardingDiscardConfirm:
+      "Deinen lokalen Entwurf verwerfen und die aktuellen Angaben laden?",
     reportSingular: "Report",
     projectType: "Projekttyp",
     webProject: "Webdesign",
@@ -182,6 +225,49 @@ export const words: Record<"de" | "en", Record<string, string>> = {
     retry: "Erneut versuchen",
   },
   en: {
+    copyEmail: "Copy address",
+    emailCopied: "Copied",
+    copyEmailManually: "Copy the invitation address manually.",
+    onboarding: "Customer onboarding",
+    onboardingHeading: "Help us get your project started",
+    onboardingIntro:
+      "Share the key details and invite Nexene to the systems we need.",
+    onboardingStart: "Start onboarding",
+    onboardingResume: "Continue onboarding",
+    onboardingDone: "Onboarding completed",
+    onboardingSubmitted: "Details submitted on",
+    onboardingContact: "Contact",
+    onboardingGoals: "Project goals",
+    onboardingAccess: "Access",
+    onboardingAssets: "Assets",
+    onboardingReview: "Review",
+    onboardingSteps: "Onboarding steps",
+    step: "Step",
+    of: "of",
+    next: "Next",
+    saveAndClose: "Save and close",
+    newWebsite:
+      "We are creating a new website and do not have a website URL yet",
+    localBusiness: "We have a local location or service area",
+    invitationAddress: "Invite Nexene at this address",
+    invitationPending: "The invitation address is being configured.",
+    accessSafety:
+      "Send invitations with the permissions described below. Do not enter passwords, API keys or recovery codes in this form.",
+    accessStatus: "Access status",
+    chooseStatus: "Select a status",
+    accessNote: "Access note (optional)",
+    assetsHelp:
+      "Link existing folders or documents and check that Nexene can open them. Use the notes field to list missing assets.",
+    checkAnswers: "Check your answers",
+    onboardingVerificationNote:
+      "Completing onboarding saves your details as a document. Nexene will then verify the reported access.",
+    confirmOnboarding:
+      "I have checked the details and have not entered passwords or secret keys.",
+    submitOnboarding: "Complete onboarding",
+    notProvided: "Not provided",
+    onboardingReload: "Discard draft and load latest version",
+    onboardingDiscardConfirm:
+      "Discard your local draft and load the latest details?",
     reportSingular: "Report",
     projectType: "Project type",
     webProject: "Web design",

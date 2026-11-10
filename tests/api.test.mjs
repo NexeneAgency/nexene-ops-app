@@ -1090,6 +1090,204 @@ test("v1.3 PDFs persist in chunks and remain isolated, private and admin-managed
   assert.equal((await get(adminCookie)).status, 404);
 });
 
+test("v1.4 onboarding saves scoped drafts, rejects conflicts and creates one shared document", async () => {
+  const { accessItems } = await import("../lib/onboarding.mjs");
+  const path = `onboardings/${projectA}`;
+  assert.equal(
+    (
+      await call(
+        `onboardings/${projectB}`,
+        "PATCH",
+        { expected_revision: 0, step: 0, answers: {} },
+        cookieA,
+      )
+    ).status,
+    404,
+  );
+  assert.equal(
+    (await call(path, "PATCH", { step: 0, answers: {} }, cookieA)).status,
+    400,
+  );
+  const draft = await call(
+    path,
+    "PATCH",
+    { expected_revision: 0, step: 1, answers: { company: "Customer company" } },
+    cookieA,
+  );
+  assert.equal(draft.status, 200);
+  assert.equal(draft.body.revision, 1);
+  let state = (await call("state", "GET", null, cookieA)).body;
+  assert.equal(
+    state.onboardings.find((row) => row.project_id === projectA).status,
+    "draft",
+  );
+  assert.equal(
+    state.onboardings.find((row) => row.project_id === projectA).answers
+      .company,
+    "Customer company",
+  );
+  const conflicts = await Promise.all([
+    call(
+      path,
+      "PATCH",
+      { expected_revision: 1, step: 1, answers: { company: "First draft" } },
+      cookieA,
+    ),
+    call(
+      path,
+      "PATCH",
+      { expected_revision: 1, step: 1, answers: { company: "Second draft" } },
+      cookieA,
+    ),
+  ]);
+  assert.deepEqual(conflicts.map((r) => r.status).sort(), [200, 409]);
+  const answers = {
+    company: "Customer company",
+    contact_name: "Contact A",
+    contact_email: "a@customer.test",
+    website: "https://example.com",
+    platform: "WordPress",
+    goals: "More enquiries",
+    services: "Design services",
+    audience: "Local businesses",
+    confirmed: true,
+    accesses: Object.fromEntries(
+      accessItems("web").map((item) => [
+        item.id,
+        { status: "invited", note: "Sent by contact A" },
+      ]),
+    ),
+  };
+  assert.equal(
+    (
+      await call(
+        path,
+        "PATCH",
+        {
+          expected_revision: 2,
+          step: 4,
+          complete: true,
+          answers: { ...answers, confirmed: false },
+        },
+        cookieA,
+      )
+    ).status,
+    400,
+  );
+  assert.equal(
+    (
+      await call(
+        path,
+        "PATCH",
+        {
+          expected_revision: 2,
+          step: 4,
+          complete: true,
+          answers: { ...answers, website: "javascript:alert(1)" },
+        },
+        cookieA,
+      )
+    ).status,
+    400,
+  );
+  const completions = await Promise.all([
+    call(
+      path,
+      "PATCH",
+      { expected_revision: 2, step: 4, complete: true, answers },
+      cookieA,
+    ),
+    call(
+      path,
+      "PATCH",
+      { expected_revision: 2, step: 4, complete: true, answers },
+      cookieA,
+    ),
+  ]);
+  const completed = completions[0];
+  assert.equal(completions[1].status, 200);
+  assert.equal(completions[1].body.document_id, completed.body.document_id);
+  assert.equal(completed.status, 200);
+  assert.equal(completed.body.completed, true);
+  const document = sql
+    .prepare("SELECT * FROM documents WHERE id=?")
+    .get(completed.body.document_id);
+  assert.equal(document.visible, 1);
+  assert.equal(document.project_id, projectA);
+  assert.match(document.content, /More enquiries/);
+  assert.match(document.content, /Nexene muss die Zugriffe noch prüfen/);
+  const repeated = await call(
+    path,
+    "PATCH",
+    { expected_revision: 2, step: 4, complete: true, answers },
+    cookieA,
+  );
+  assert.equal(repeated.body.document_id, document.id);
+  assert.equal(
+    sql
+      .prepare(
+        "SELECT count(*) n FROM documents WHERE title=? AND project_id=?",
+      )
+      .get("Onboarding: Project A", projectA).n,
+    1,
+  );
+  const own = (await call("state", "GET", null, cookieA)).body;
+  assert.equal(
+    own.onboardings.find((row) => row.project_id === projectA).status,
+    "completed",
+  );
+  assert.ok(own.documents.some((row) => row.id === document.id));
+});
+
+test("v1.4 SEO onboarding includes local profiles conditionally and preserves drafts on failed completion", async () => {
+  const { accessItems } = await import("../lib/onboarding.mjs");
+  assert.ok(
+    accessItems("seo_geo", true).some((item) => item.id === "business_profile"),
+  );
+  assert.equal(
+    accessItems("seo_geo", false).some(
+      (item) => item.id === "business_profile",
+    ),
+    false,
+  );
+  assert.equal(
+    accessItems("seo_geo").some((item) => item.id === "hosting"),
+    false,
+  );
+  const project = (
+    await call("projects", "POST", {
+      customer_id: customerA,
+      name: "SEO onboarding",
+      project_type: "seo_geo",
+    })
+  ).body.id;
+  const draft = await call(
+    `onboardings/${project}`,
+    "PATCH",
+    { expected_revision: 0, step: 0, answers: { company: "SEO company" } },
+    cookieA,
+  );
+  assert.equal(draft.status, 200);
+  const invalid = await call(
+    `onboardings/${project}`,
+    "PATCH",
+    {
+      expected_revision: 1,
+      step: 4,
+      complete: true,
+      answers: { company: "SEO company" },
+    },
+    cookieA,
+  );
+  assert.equal(invalid.status, 400);
+  const saved = sql
+    .prepare("SELECT * FROM onboardings WHERE project_id=?")
+    .get(project);
+  assert.equal(saved.revision, 1);
+  assert.equal(saved.status, "draft");
+  assert.equal(saved.document_id, null);
+});
+
 after(async () => {
   await closeDatabase();
   sql.close();
