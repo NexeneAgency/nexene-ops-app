@@ -15,6 +15,7 @@ import { ApprovalsView } from "./approvals-view";
 import { DocumentsView } from "./documents-view";
 import { ResourcesView } from "./resources-view";
 import { TaskViews } from "./task-views";
+import { DeleteProject } from "./delete-project";
 import { OnboardingPanel } from "./onboarding";
 import { ReportsView } from "./reports-view";
 import { TimeView } from "./time-view";
@@ -218,6 +219,7 @@ export function ProjectDetail() {
       {tab === "approvals" && <ApprovalsView />}
       {tab === "resources" && <ResourcesView />}
       {tab === "time" && admin && <TimeView />}
+      {admin && <DeleteProject key={selected.id} />}
     </>
   );
 }

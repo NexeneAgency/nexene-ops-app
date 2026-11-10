@@ -1,5 +1,13 @@
 export const words: Record<"de" | "en", Record<string, string>> = {
   de: {
+    projectManagement: "Projektverwaltung",
+    deleteProject: "Projekt löschen",
+    deleteProjectHint: "Das Projekt und seine Inhalte dauerhaft entfernen.",
+    deleteProjectConsequences:
+      "Alle Aufgaben, Dokumente, Reports, Zeiten, Freigaben und Onboarding-Angaben dieses Projekts werden dauerhaft gelöscht. Der Kunde und seine Kontakte bleiben erhalten.",
+    confirmProjectName:
+      "Zum Bestätigen den vollständigen Projektnamen eingeben",
+    deletePermanently: "Dauerhaft löschen",
     copyEmail: "Adresse kopieren",
     emailCopied: "Kopiert",
     copyEmailManually: "Bitte kopiere die Einladungsadresse manuell.",
@@ -225,6 +233,13 @@ export const words: Record<"de" | "en", Record<string, string>> = {
     retry: "Erneut versuchen",
   },
   en: {
+    projectManagement: "Project management",
+    deleteProject: "Delete project",
+    deleteProjectHint: "Permanently remove this project and its contents.",
+    deleteProjectConsequences:
+      "All tasks, documents, reports, time entries, approvals and onboarding details for this project will be permanently deleted. The customer and contacts will remain.",
+    confirmProjectName: "Enter the full project name to confirm",
+    deletePermanently: "Delete permanently",
     copyEmail: "Copy address",
     emailCopied: "Copied",
     copyEmailManually: "Copy the invitation address manually.",

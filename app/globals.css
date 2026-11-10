@@ -2988,3 +2988,29 @@ main.portal-content {
   font-size: 15px;
   overflow-wrap: anywhere;
 }
+.project-danger-zone {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--line);
+  margin-top: 40px;
+  padding-top: 24px;
+}
+.project-danger-zone h2 {
+  font-size: 14px;
+}
+.project-danger-zone p {
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 6px;
+}
+.modal-footer .primary.destructive {
+  color: var(--white);
+  background: #962b27;
+  border-color: #962b27;
+}
+.modal-footer .primary.destructive:enabled:hover {
+  background: #7d211e;
+}

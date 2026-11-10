@@ -61,3 +61,9 @@ Noch nicht geprüft: tatsächliche E-Mail-Zustellung über den Nexene-SMTP-Anbie
 - Zusätzlich drei Formularzustände mit axe geprüft, ohne gemeldete Verstöße. Die bisherigen Browser-, Tastatur-, Konflikt- und Portalprüfungen bestehen ebenfalls.
 - TypeScript und Vercel-Produktionsbuild bestanden. Zugriffsformular visuell geprüft.
 - Schema 5 ergänzt Onboarding-Daten, ohne bestehende Inhalte zu ändern. Die Einladungsadresse wird über `ONBOARDING_EMAIL` gepflegt. Angaben werden gespeichert; Einladungen und Prüfung erfolgen in den jeweiligen Systemen durch Kunde und Nexene.
+
+## v1.5, 10. November 2026
+
+- Je 28 API-/Datenbanktests mit SQLite und dem konfigurierten libSQL-Treiber bestanden. Die Projektlöschung entfernt auch verschachtelte Aufgaben/Dokumente, Wiederholungen, Onboardings, PDF-Blöcke, Kommentare, Verknüpfungen, Freigaben und Zeiten. Andere Projekte und der Kunde bleiben erhalten; die Fremdschlüsselprüfung besteht.
+- Browserprüfung bestanden: Kunden erhalten keine Löschfunktion. Admins müssen den genauen Projektnamen eingeben; ein falscher Name lässt die Löschaktion deaktiviert. Nach dem Löschen erscheint die Projektübersicht, ein Kunde ohne weitere Projekte sieht den leeren Projektzustand.
+- Löschdialog mit axe ohne gemeldete Verstöße geprüft. Die bisherigen Browser-, Tastatur- und Konfliktprüfungen sowie Produktionsbuild und TypeScript bestehen.

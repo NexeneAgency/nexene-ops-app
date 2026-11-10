@@ -1,5 +1,11 @@
 # Änderungen
 
+## v1.5.0 · 10. November 2026
+
+- Admins können Projekte in den Projektdetails dauerhaft löschen. Der vollständige Projektname muss vor dem Löschen bestätigt werden.
+- Aufgaben, Dokumente, Reports, Zeiteinträge, Freigaben, Verknüpfungen und Onboarding-Daten werden gemeinsam entfernt. Kunde und Kontakte bleiben erhalten.
+- Kunden erhalten keine Löschfunktion; der Server verlangt die Adminrolle. Es ist keine Datenbankmigration erforderlich.
+
 ## v1.4.0 · 10. November 2026
 
 - Kunden-Onboarding mit fünf Schritten für Webdesign und SEO + GEO ergänzt. Lokale Unternehmen erhalten eine zusätzliche Abfrage zum Google-Unternehmensprofil.

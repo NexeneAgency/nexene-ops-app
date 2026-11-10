@@ -158,9 +158,10 @@ export function useWorkspaceController() {
       setBusy(false);
     }
   }
-  function navigate(next: View, p = "") {
+  function navigate(next: View, p = "", discard = false) {
     if (
       dirty &&
+      !discard &&
       !window.confirm(
         lang === "de"
           ? "Ungespeicherte Änderungen verwerfen?"

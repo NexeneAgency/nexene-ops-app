@@ -1288,6 +1288,148 @@ test("v1.4 SEO onboarding includes local profiles conditionally and preserves dr
   assert.equal(saved.document_id, null);
 });
 
+test("v1.5 admin project deletion removes its entire graph and preserves customer and other projects", async () => {
+  const id = (
+    await call("projects", "POST", {
+      customer_id: customerA,
+      name: "Delete only this project",
+      project_type: "seo_geo",
+    })
+  ).body.id;
+  const root = (
+    await call("tasks", "POST", {
+      project_id: id,
+      title: "Root",
+      due_date: "2027-12-01",
+      recurrence: "weekly",
+    })
+  ).body.id;
+  const child = (
+    await call("tasks", "POST", {
+      project_id: id,
+      parent_id: root,
+      title: "Child",
+    })
+  ).body.id;
+  await call(`tasks/${root}`, "PATCH", { status: "done" });
+  await call("comments", "POST", {
+    task_id: root,
+    body: "Delete this comment",
+  });
+  await call("attachments", "POST", {
+    task_id: child,
+    title: "Linked attachment",
+    url: "https://example.com",
+  });
+  const doc = (
+    await call("documents", "POST", { project_id: id, title: "Parent" })
+  ).body.id;
+  await call("documents", "POST", {
+    project_id: id,
+    parent_id: doc,
+    title: "Nested document",
+  });
+  await call("resources", "POST", {
+    project_id: id,
+    title: "Resource",
+    url: "https://example.com",
+  });
+  await call("time", "POST", {
+    project_id: id,
+    date: "2026-11-10",
+    minutes: 60,
+  });
+  await call("approvals", "POST", {
+    project_id: id,
+    title: "Approval",
+    reference: "Version 1",
+  });
+  const storage = await (await import("../lib/database.mjs")).database();
+  await storage
+    .prepare("INSERT INTO onboardings(project_id,document_id) VALUES(?,?)")
+    .run(id, doc);
+  await storage
+    .prepare(
+      "INSERT INTO reports(id,project_id,title,period,file_name,size) VALUES('delete-report',?,'Delete report','2026-11','report.pdf',1)",
+    )
+    .run(id);
+  await storage
+    .prepare("INSERT INTO report_chunks VALUES('delete-report',0,?)")
+    .run(Buffer.from([1]));
+  const customerBefore = sql
+    .prepare("SELECT * FROM customers WHERE id=?")
+    .get(customerA);
+  const otherBefore = sql
+    .prepare("SELECT * FROM projects WHERE id=?")
+    .get(projectA);
+  const taskIds = sql
+    .prepare("SELECT id FROM tasks WHERE project_id=?")
+    .all(id)
+    .map((r) => r.id);
+  assert.equal(
+    (await call(`projects/${id}`, "DELETE", null, cookieA)).status,
+    403,
+  );
+  assert.equal((await call(`projects/${id}`, "DELETE")).status, 200);
+  for (const table of [
+    "projects",
+    "tasks",
+    "documents",
+    "resources",
+    "approvals",
+    "time_entries",
+    "reports",
+    "onboardings",
+  ]) {
+    const column = table === "projects" ? "id" : "project_id";
+    assert.equal(
+      sql.prepare(`SELECT count(*) n FROM ${table} WHERE ${column}=?`).get(id)
+        .n,
+      0,
+      table,
+    );
+  }
+  for (const taskId of taskIds) {
+    assert.equal(
+      sql.prepare("SELECT count(*) n FROM comments WHERE task_id=?").get(taskId)
+        .n,
+      0,
+    );
+    assert.equal(
+      sql
+        .prepare("SELECT count(*) n FROM attachments WHERE task_id=?")
+        .get(taskId).n,
+      0,
+    );
+    assert.equal(
+      sql
+        .prepare(
+          "SELECT count(*) n FROM task_recurrences WHERE source_id=? OR next_id=?",
+        )
+        .get(taskId, taskId).n,
+      0,
+    );
+  }
+  assert.equal(
+    sql
+      .prepare(
+        "SELECT count(*) n FROM report_chunks WHERE report_id='delete-report'",
+      )
+      .get().n,
+    0,
+  );
+  assert.deepEqual(
+    sql.prepare("SELECT * FROM customers WHERE id=?").get(customerA),
+    customerBefore,
+  );
+  assert.deepEqual(
+    sql.prepare("SELECT * FROM projects WHERE id=?").get(projectA),
+    otherBefore,
+  );
+  assert.deepEqual(sql.prepare("PRAGMA foreign_key_check").all(), []);
+  assert.equal((await call(`projects/${id}`, "DELETE")).status, 404);
+});
+
 after(async () => {
   await closeDatabase();
   sql.close();

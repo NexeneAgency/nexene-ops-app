@@ -188,6 +188,58 @@ try {
     await portal.locator(".portal-project-heading h1").textContent(),
     "SEO + GEO test engagement",
   );
+  assert.equal(
+    await portal
+      .getByRole("button", { name: "Delete project", exact: true })
+      .count(),
+    0,
+  );
+  await page
+    .getByRole("button", { name: "Projekt löschen", exact: true })
+    .click();
+  const deletion = page.getByRole("dialog");
+  const confirm = deletion.getByLabel(
+    "Zum Bestätigen den vollständigen Projektnamen eingeben",
+    { exact: true },
+  );
+  await confirm.fill("Wrong name");
+  assert.equal(
+    await deletion
+      .getByRole("button", { name: "Dauerhaft löschen", exact: true })
+      .isDisabled(),
+    true,
+  );
+  await confirm.fill("SEO + GEO test engagement");
+  const deletionA11y = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])
+    .analyze();
+  assert.deepEqual(
+    deletionA11y.violations.map((v) => v.id),
+    [],
+  );
+  await deletion
+    .getByRole("button", { name: "Dauerhaft löschen", exact: true })
+    .click();
+  await page.getByRole("heading", { name: "Projekte.", exact: true }).waitFor();
+  assert.equal(
+    await page
+      .locator(".project-card")
+      .filter({
+        has: page.getByRole("heading", {
+          name: "SEO + GEO test engagement",
+          exact: true,
+        }),
+      })
+      .count(),
+    0,
+  );
+  await portal.reload();
+  await portal
+    .getByRole("heading", {
+      name: "Your project is being prepared",
+      exact: true,
+    })
+    .waitFor();
   assert.deepEqual(errors, []);
   console.log(
     "V1.3 passed: direct customer portal, no admin navigation, recurring SEO without progress, PDF publishing, private download, refresh, DE/EN and two accessible portal widths.",
