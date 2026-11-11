@@ -46,6 +46,8 @@ E-Mail-Adressen werden durch Admins freigeschaltet. Kontakte verwenden anschlie�
 
 ## Prüfen
 
+GitHub Actions sind deaktiviert; das Repository enthält keine Workflow-Definition. Die folgenden Prüfungen werden lokal ausgeführt und verbrauchen keine Actions-Minuten.
+
 ```sh
 npm test
 npm run test:libsql

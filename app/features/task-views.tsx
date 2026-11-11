@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { statuses, today } from "../../lib/client";
 import { useWorkspace } from "../workspace-context";
 
+import { Badge } from "../ui/primitives";
 import { TaskTable } from "./task-table";
 export function TaskViews() {
   const {
@@ -54,8 +55,9 @@ export function TaskViews() {
                   }
                   onClick={() => setTaskId(task.id)}
                 >
-                  <small>{projectOf(task.project_id)?.customer_name}</small>
                   <h4>{task.title}</h4>
+                  <Badge status={status}>{t(status)}</Badge>
+                  <small>{projectOf(task.project_id)?.name}</small>
                   <div>
                     <span className={`priority ${task.priority}`}>
                       {t(task.priority)}

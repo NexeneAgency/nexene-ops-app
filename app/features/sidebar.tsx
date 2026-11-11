@@ -1,5 +1,5 @@
 "use client";
-import { ChevronRight, LogOut, Plus, Settings } from "lucide-react";
+import { LogOut, Plus, Settings } from "lucide-react";
 
 import { api, errorMessage } from "../../lib/client";
 import { Avatar } from "../ui/primitives";
@@ -40,11 +40,9 @@ export function Sidebar() {
         <span>OPS</span>
       </button>
       <div className="workspace-label">
-        <span className="workspace-symbol">N</span>
         <div>
           Nexene Agency<small>{admin ? t("workspace") : t("portal")}</small>
         </div>
-        <ChevronRight size={14} />
       </div>
       <span className="nav-caption">{t("workspace")}</span>
       <nav aria-label={t("workspace")}>
