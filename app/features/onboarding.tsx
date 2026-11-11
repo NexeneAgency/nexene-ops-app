@@ -4,7 +4,7 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
-  ClipboardList,
+  CheckSquare,
   Copy,
   LoaderCircle,
   X,
@@ -33,7 +33,7 @@ export function OnboardingPanel() {
         className={`onboarding-panel ${done ? "completed" : ""}`}
         aria-label={t("onboarding")}
       >
-        <ClipboardList size={24} aria-hidden="true" />
+        <CheckSquare size={18} aria-hidden="true" />
         <div>
           <h2>{t(done ? "onboardingDone" : "onboardingHeading")}</h2>
           <p>

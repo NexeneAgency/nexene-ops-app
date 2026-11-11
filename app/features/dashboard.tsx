@@ -1,12 +1,4 @@
 "use client";
-import {
-  ArrowUpRight,
-  CheckSquare,
-  FolderKanban,
-  ShieldCheck,
-  Users,
-} from "lucide-react";
-
 import { Empty } from "../ui/primitives";
 import { useWorkspace } from "../workspace-context";
 import { ProjectCard } from "./project-card";
@@ -21,32 +13,23 @@ export function Dashboard() {
         {(
           [
             [
-              FolderKanban,
               t("activeProjects"),
               data.projects.filter((p) => p.phase !== "Betreuung").length,
-              "lavender",
             ],
             [
-              CheckSquare,
               t("openTasks"),
               data.tasks.filter((t) => t.status !== "done").length,
-              "green",
             ],
             [
-              ShieldCheck,
               t("approvals"),
               data.approvals.filter((a) => a.status === "pending").length,
-              "peach",
             ],
-            [Users, t("customersCount"), data.customers.length, "blue"],
+            [t("customersCount"), data.customers.length],
           ] as const
-        ).map(([Icon, label, value, color]) => (
+        ).map(([label, value]) => (
           <div className="stat" key={label}>
             <div>
               <span>{label}</span>
-              <span className={`stat-icon ${color}`}>
-                <Icon size={17} />
-              </span>
             </div>
             <strong>{value}</strong>
             <small>
@@ -56,13 +39,9 @@ export function Dashboard() {
         ))}
       </div>
       <div className="section-heading">
-        <h2>
-          {t("projectOverview")}
-          <span>{data.projects.length}</span>
-        </h2>
-        <button className="text-button" onClick={() => navigate("projects")}>
+        <h2>{t("projectOverview")}</h2>
+        <button className="secondary" onClick={() => navigate("projects")}>
           {t("viewAll")}
-          <ArrowUpRight size={15} />
         </button>
       </div>
       <div className="project-grid">
@@ -73,9 +52,8 @@ export function Dashboard() {
       </div>
       <div className="section-heading">
         <h2>{t("nextTasks")}</h2>
-        <button className="text-button" onClick={() => navigate("tasks")}>
+        <button className="secondary" onClick={() => navigate("tasks")}>
           {t("viewAll")}
-          <ArrowUpRight size={15} />
         </button>
       </div>
       <TaskTable

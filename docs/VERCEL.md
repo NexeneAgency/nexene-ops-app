@@ -84,4 +84,4 @@ Vercel-Deployments sichern die Datenbank nicht automatisch. Vor späteren Migrat
 
 Ohne `TURSO_DATABASE_URL` und außerhalb Vercels funktioniert weiterhin eine SQLite-Datei im lokalen `data/`-Verzeichnis. Mit gesetzter Turso-URL greift auch die lokale App auf die konfigurierte externe Datenbank zu; deshalb für Entwicklung eine eigene Testdatenbank verwenden.
 
-Die Docker-Dateien bleiben als alternative Betriebsart im Repository. Der Docker-Image-Publish ist nur noch manuell über den Workflow-Parameter `publish_docker` vorgesehen; normale Pushes führen die Qualitätsprüfungen aus.
+Die Docker-Dateien bleiben als alternative Betriebsart im Repository. GitHub Actions werden nicht verwendet; die Workflow-Definition wurde entfernt. Qualitätsprüfungen laufen lokal mit den unter „Prüfen“ in der README aufgeführten Befehlen. Ein Docker-Image bei Bedarf lokal mit `docker build -t nexene-ops .` bauen. Die Vercel-Anbindung benötigt keine GitHub Actions.

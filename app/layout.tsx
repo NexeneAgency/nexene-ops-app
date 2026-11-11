@@ -1,4 +1,5 @@
 import "./globals.css";
+import "./design.css";
 export const metadata = {
   title: "Nexene Ops",
   description: "Deine Agentur. Ein Workspace.",

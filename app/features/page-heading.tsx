@@ -1,5 +1,5 @@
 "use client";
-import { ArrowLeft, Plus } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 import { useWorkspace } from "../workspace-context";
 export function PageHeading() {
@@ -54,7 +54,6 @@ export function PageHeading() {
             })
           }
         >
-          <Plus size={17} />
           {t(
             view === "customers"
               ? "newCustomer"

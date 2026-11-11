@@ -74,6 +74,7 @@ function WorkspaceContent() {
               <PageHeading />
               {view !== "overview" && view !== "settings" && (
                 <div className="search-row">
+                  <span className="search-caption">{t("search")}</span>
                   <label className="search">
                     <Search size={16} />
                     <input
