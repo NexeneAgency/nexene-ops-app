@@ -37,7 +37,7 @@ export function PageHeading() {
         {view === "overview" && <p>{t("intro")}</p>}
         {selected && <p>{selected.description}</p>}
       </div>
-      {admin && (
+      {admin && view !== "leads" && (
         <button
           className="primary"
           onClick={() =>

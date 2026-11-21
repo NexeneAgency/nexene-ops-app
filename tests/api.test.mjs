@@ -47,6 +47,29 @@ let customerA,
   visibleTask,
   hiddenTask,
   document;
+test("leads persist with defaults and migration 8 is applied", async () => {
+  const created = await call("leads", "POST", {
+    company_name: "CRM Test GmbH",
+    contact_email: "crm@example.test",
+    contact_email_verified: true,
+  });
+  assert.equal(created.status, 201);
+  const read = await call(`leads/${created.body.id}`);
+  assert.equal(read.body.company_name, "CRM Test GmbH");
+  assert.equal(read.body.status, "neu");
+  assert.equal(read.body.contact_email_verified, true);
+  assert.equal(read.body.contact_phone_verified, false);
+  assert.ok(read.body.created_at);
+  assert.ok(
+    sql.prepare("SELECT version FROM schema_migrations WHERE version=8").get(),
+  );
+  assert.equal(
+    sql
+      .prepare("SELECT company_name FROM leads WHERE id=?")
+      .get(created.body.id).company_name,
+    "CRM Test GmbH",
+  );
+});
 test("authentication is required, writes reject other origins", async () => {
   assert.equal((await call("state", "GET", null, "")).status, 401);
   assert.equal(
@@ -155,6 +178,97 @@ test("create customers, projects and authorized contacts", async () => {
     minutes: 60,
     note: "Private work",
   });
+});
+test("leads list, filter, edit, status update and deletion use persisted data", async () => {
+  const created = (
+    await call("leads", "POST", {
+      company_name: "Pipeline Test",
+      match_reason: "Website fehlt",
+      source: "https://example.test",
+      outreach_email_draft: "Entwurf, kein Versand",
+    })
+  ).body;
+  assert.ok((await call("leads")).body.some((row) => row.id === created.id));
+  const updated = await call(`leads/${created.id}`, "PATCH", {
+    contact_name: "Test Person",
+    contact_phone: "+43 123",
+    contact_phone_verified: true,
+  });
+  assert.equal(updated.status, 200);
+  assert.equal(updated.body.company_name, "Pipeline Test");
+  assert.equal(updated.body.contact_phone_verified, true);
+  assert.equal(
+    (
+      await call(`leads/${created.id}/status`, "PATCH", {
+        status: "kontaktiert",
+      })
+    ).body.status,
+    "kontaktiert",
+  );
+  assert.deepEqual(
+    (await call("leads?status=kontaktiert")).body.map((row) => row.id),
+    [created.id],
+  );
+  assert.equal((await call("leads?status=gewonnen")).body.length, 0);
+  assert.equal(
+    (await call(`leads/${created.id}`, "PATCH", { contact_phone: "+43 456" }))
+      .body.contact_phone_verified,
+    false,
+  );
+  assert.equal((await call(`leads/${created.id}`, "DELETE")).status, 200);
+  assert.equal((await call(`leads/${created.id}`)).status, 404);
+  assert.equal(
+    (await call(`leads/${created.id}`, "PATCH", { status: "neu" })).status,
+    404,
+  );
+  assert.equal((await call(`leads/${created.id}`, "DELETE")).status, 404);
+});
+test("leads reject invalid input and remain admin-only", async () => {
+  const id = (await call("leads", "POST", { company_name: "Private Lead" }))
+    .body.id;
+  for (const body of [
+    {},
+    { company_name: " " },
+    { company_name: "X", status: "bad" },
+    { company_name: "X", website: "javascript:alert(1)" },
+    { company_name: "X", contact_email: "bad" },
+    { company_name: "X", contact_phone_verified: "false" },
+    { company_name: "X", match_reason: "x".repeat(10001) },
+  ])
+    assert.equal((await call("leads", "POST", body)).status, 400);
+  assert.equal((await call("leads?status=bad")).status, 400);
+  assert.equal((await call(`leads/${id}/status`, "PATCH", {})).status, 400);
+  assert.equal(
+    (await call(`leads/${id}`, "PATCH", { id: "overwrite" })).status,
+    400,
+  );
+  assert.equal((await call(`leads/${id}/extra`)).status, 404);
+  assert.equal((await call("leads", "GET", null, "")).status, 401);
+  assert.equal(
+    (
+      await call(
+        "leads",
+        "POST",
+        { company_name: "X" },
+        adminCookie,
+        "https://evil.test",
+      )
+    ).status,
+    403,
+  );
+  for (const [path, method, body] of [
+    ["leads", "GET"],
+    [`leads/${id}`, "GET"],
+    ["leads", "POST", { company_name: "X" }],
+    [`leads/${id}`, "PATCH", { status: "neu" }],
+    [`leads/${id}/status`, "PATCH", { status: "gewonnen" }],
+    [`leads/${id}`, "DELETE"],
+  ])
+    assert.equal((await call(path, method, body, cookieA)).status, 403);
+  assert.equal(
+    "leads" in (await call("state", "GET", null, cookieA)).body,
+    false,
+  );
 });
 test("customer data excludes other customers and all internal financial/content data", async () => {
   const result = await call("state", "GET", null, cookieA),

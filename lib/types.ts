@@ -1,7 +1,32 @@
 import type { JSONContent } from "@tiptap/react";
 export type Locale = "de" | "en";
 export type View =
-  "overview" | "projects" | "tasks" | "documents" | "customers" | "settings";
+  | "overview"
+  | "projects"
+  | "tasks"
+  | "documents"
+  | "customers"
+  | "settings"
+  | "leads";
+export type LeadStatus =
+  "neu" | "kontaktiert" | "geantwortet" | "gewonnen" | "verloren";
+export interface Lead {
+  id: string;
+  company_name: string;
+  website: string;
+  match_reason: string;
+  contact_name: string;
+  contact_role: string;
+  contact_email: string;
+  contact_email_verified: boolean;
+  contact_phone: string;
+  contact_phone_verified: boolean;
+  source: string;
+  outreach_email_draft: string;
+  status: LeadStatus;
+  created_at: string;
+  updated_at: string;
+}
 export type ProjectTab =
   "tasks" | "documents" | "approvals" | "resources" | "time" | "reports";
 export type TaskMode = "list" | "board" | "calendar" | "timeline";

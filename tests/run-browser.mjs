@@ -27,14 +27,17 @@ try {
     server.listen(port, "127.0.0.1", resolve);
   });
   await fetch(`${base}/api/health`);
-  for (const script of [
-    "tests/browser.mjs",
-    "tests/v11-browser.mjs",
-    "tests/v13-browser.mjs",
-    "tests/v14-browser.mjs",
-    "tests/v16-browser.mjs",
-    "tests/accessibility.mjs",
-  ]) {
+  for (const script of process.env.TEST_SCRIPT
+    ? process.env.TEST_SCRIPT.split(",")
+    : [
+        "tests/browser.mjs",
+        "tests/v11-browser.mjs",
+        "tests/v13-browser.mjs",
+        "tests/v14-browser.mjs",
+        "tests/v16-browser.mjs",
+        "tests/accessibility.mjs",
+        "tests/leads-browser.mjs",
+      ]) {
     const exit = await new Promise((resolve) => {
       const child = spawn(process.execPath, [script], {
         stdio: "inherit",

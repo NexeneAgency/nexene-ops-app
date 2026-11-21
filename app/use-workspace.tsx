@@ -260,6 +260,7 @@ export function useWorkspaceController() {
     ["projects", FolderKanban],
     ["tasks", CheckSquare],
     ["documents", FileText],
+    ...(admin ? [["leads", Users] as [View, LucideIcon]] : []),
     ...(admin ? [["customers", Users] as [View, LucideIcon]] : []),
   ];
 
