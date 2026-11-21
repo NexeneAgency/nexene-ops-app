@@ -2,6 +2,7 @@
 import { Check, Search, X } from "lucide-react";
 import { CustomerPortal } from "./features/customer-portal";
 import { CustomersView } from "./features/customers-view";
+import { LeadsView } from "./features/leads-view";
 import { Dashboard } from "./features/dashboard";
 import { DocumentsView } from "./features/documents-view";
 import { FormModal } from "./features/form-modal";
@@ -116,6 +117,7 @@ function WorkspaceContent() {
               {view === "tasks" && <TasksPage />}
               {view === "documents" && <DocumentsView />}
               {view === "customers" && admin && <CustomersView />}
+              {view === "leads" && admin && <LeadsView />}
               {view === "settings" && admin && <SettingsView />}
             </main>
           </div>

@@ -678,6 +678,42 @@ main {
   gap: 5px;
   align-items: center;
 }
+.leads-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.leads-fields {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+.leads-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.leads-table td {
+  vertical-align: top;
+  white-space: normal;
+  min-width: 150px;
+  max-width: 340px;
+  overflow-wrap: anywhere;
+}
+.leads-table td a,
+.leads-table td small {
+  display: block;
+  margin-top: 5px;
+}
+.leads-table td p {
+  margin: 8px 0 0;
+}
 .table-wrap {
   border: 1px solid var(--line);
   border-radius: 8px;

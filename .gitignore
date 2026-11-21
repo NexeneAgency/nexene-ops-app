@@ -8,6 +8,7 @@ backups/
 *.log
 test-results/
 playwright-report/
+test-artifacts/
 *.tsbuildinfo
 
 .next-browser-tests/

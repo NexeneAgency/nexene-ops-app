@@ -1,5 +1,6 @@
 export const words: Record<"de" | "en", Record<string, string>> = {
   de: {
+    leads: "Leads",
     lastLogin: "Letztes Login",
     neverLoggedIn: "Noch nie angemeldet",
     loginNotRecorded: "Bisher nicht erfasst",
@@ -252,6 +253,7 @@ export const words: Record<"de" | "en", Record<string, string>> = {
     retry: "Erneut versuchen",
   },
   en: {
+    leads: "Leads",
     lastLogin: "Last sign-in",
     neverLoggedIn: "Never signed in",
     loginNotRecorded: "Not recorded yet",
